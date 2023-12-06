@@ -44,6 +44,14 @@ class AddLk(QtWidgets.QWidget):
         self.ui.setupUi(self)
         self.ui.TlgDateEdit.setDate(QtCore.QDate().currentDate())
         self.ui.SrokDateEdit.setDate(QtCore.QDate().currentDate())
+        self.ui.add_btn.clicked.connect(self.add_lk_to_db)
+        self.ui.cancel_btn.clicked.connect(self.close())
+        
+    def add_lk_to_db(self):
+        data = LK()
+        data.pack_lk_from_form(self)
+        main.db.add_lk_to_db(data)
+        self.close()
 
 if __name__ == '__main__':
     import sys

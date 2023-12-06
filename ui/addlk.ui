@@ -68,7 +68,7 @@
       </widget>
      </item>
      <item row="4" column="1">
-      <widget class="QLineEdit" name="LineEdit"/>
+      <widget class="QLineEdit" name="LkLineEdit"/>
      </item>
      <item row="2" column="1">
       <widget class="QDateEdit" name="SrokDateEdit">
@@ -84,6 +84,24 @@
    </item>
    <item>
     <layout class="QHBoxLayout" name="planesLayout"/>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QPushButton" name="add_btn">
+       <property name="text">
+        <string>Добавить</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="cancel_btn">
+       <property name="text">
+        <string>Отмена</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
   </layout>
  </widget>

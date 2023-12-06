@@ -1,9 +1,13 @@
+import json
 from dataclasses import dataclass, field
+from PyQt6.QtSql import QSqlRecord
+
+from main import AddLk
 
 
 @dataclass
 class LK:
-    lk_id: str = ''
+    id_lk: str = ''
     tlg: str = ''
     date_tlg: str = ''
     srok_tlg: str = ''
@@ -14,3 +18,32 @@ class LK:
     komu_planes: list = field(default_factory=list)
     komu_spec: list = field(default_factory=list)
     complete: int = 0
+
+    def unpack_lk_from_db(self, record: QSqlRecord):
+        self.id_lk = record.value('id_lk')
+        self.tlg = record.value('tlg')
+        self.date_tlg = record.value('date_tlg')
+        self.srok_tlg = record.value('srok_tlg')
+        self.opisanie = record.value('opisanie')
+        self.lk = record.value('lk')
+        self.otvet = record.value('otvet')
+        self.date_otvet = record.value('date_otvet')
+        self.komu_planes = json.loads(record.value('komu_planes'))
+        self.komu_spec = json.loads(record.value('komu_spec'))
+        self.complete = record.value('complete')
+        return self
+
+    def pack_lk_from_form(self, form: AddLk):
+        def pack_komu_planes(self) -> list:
+            pass
+
+        def pack_komu_spec(self) -> list:
+            pass
+
+        self.opisanie = form.ui.textEdit.text()
+        self.tlg = form.ui.TlgLineEdit.text()
+        self.date_tlg = form.ui.TlgDateEdit.date().toString()
+        self.srok_tlg = form.ui.SrokDateEdit.date().toString()
+        self.lk = form.ui.LkLineEdit.text()
+        self.komu_planes = pack_komu_planes(self)
+        self.komu_spec = pack_komu_spec(self)
