@@ -34,16 +34,18 @@ class LK:
         return self
 
     def pack_lk_from_form(self, form: AddLk):
-        def pack_komu_planes(self) -> list:
-            pass
-
-        def pack_komu_spec(self) -> list:
-            pass
-
-        self.opisanie = form.ui.textEdit.text()
+        self.opisanie = form.ui.textEdit.toPlainText()
         self.tlg = form.ui.TlgLineEdit.text()
         self.date_tlg = form.ui.TlgDateEdit.date().toString()
         self.srok_tlg = form.ui.SrokDateEdit.date().toString()
         self.lk = form.ui.LkLineEdit.text()
-        self.komu_planes = pack_komu_planes(self)
-        self.komu_spec = pack_komu_spec(self)
+        self.komu_planes = self.pack_komu_planes()
+        self.komu_spec = self.pack_komu_spec()
+
+    def pack_komu_planes(self) -> list:
+        result = []
+        return result
+
+    def pack_komu_spec(self) -> list:
+        result = []
+        return result
