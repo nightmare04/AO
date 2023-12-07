@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QGridLayout
+from PyQt6.QtWidgets import QGridLayout, QTableWidgetItem
 from PyQt6.QtCore import QDate
 from ui import *
 from modules import *
@@ -13,26 +13,69 @@ class MainWindow(QtWidgets.QMainWindow):
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+        self.db = Database()
+        self.lks = []
         self.init_table()
         self.fill_table()
         self.ui.add_btn.clicked.connect(self.add_lk_form)
-        self.db = Database()
         self.setWindowTitle("Старший инженер по специальности")
         self.show()
         self.db.check_connection()
 
     def init_table(self):
         """Описываем параметры таблицы долгов"""
-        pass
+        self.lks = self.db.load_all_lk()
+        self.ui.tableWidget.setColumnCount(len(LK().__dict__)+1)
+    #     {'id_lk' 'tlg' 'date_tlg, 'srok_tlg', 'opisanie' 'lk': 'otvet',
+    #     'date_otvet':, 'komu_planes', 'komu_spec':, 'complete'}
+        self.ui.tableWidget.setHorizontalHeaderLabels([
+            "ID",
+            "Телеграмма",
+            "Дата ТЛГ",
+            "Срок выполнения",
+            "Описание",
+            "Номер ЛК",
+            "Ответ",
+            "Дата ответа",
+            "На каких самолетах",
+            "Специальности",
+            "Выполнено",
+            ""
+        ])
+        self.ui.tableWidget.hideColumn(0)
+        self.ui.tableWidget.hideColumn(4)
+        self.ui.tableWidget.hideColumn(6)
+        self.ui.tableWidget.hideColumn(7)
+        self.ui.tableWidget.hideColumn(8)
+        self.ui.tableWidget.hideColumn(9)
+        self.ui.tableWidget.hideColumn(10)
+        self.ui.tableWidget.setRowCount(len(self.lks))
 
     def fill_table(self):
         """Заполняем таблицу долгами"""
-        pass
+        row = 0
+        for l in self.lks:
+            btn = QPushButton("Изменить")
+            btn.lk = l
+            # l = LK()
+            btn.clicked.connect(self.open_edit_form)
+            self.ui.tableWidget.setItem(row, 0, QTableWidgetItem(str(l.id_lk)))
+            self.ui.tableWidget.setCellWidget(row, 11, btn)
+            self.ui.tableWidget.setItem(row, 1, QTableWidgetItem(str(l.tlg)))
+            self.ui.tableWidget.setItem(row, 2, QTableWidgetItem(str(l.date_tlg)))
+            self.ui.tableWidget.setItem(row, 3, QTableWidgetItem(str(l.srok_tlg)))
+            self.ui.tableWidget.setItem(row, 5, QTableWidgetItem(str(l.lk)))
+            row += 1
 
     def add_lk_form(self):
         """Открываем новую форму добавления листа контроля"""
         self.addlk = AddLk()
         self.addlk.show()
+
+    def open_edit_form(self):
+        sender = self.sender()
+        self.edit_form = EditLK(sender.lk)
+        self.edit_form.show()
 
 
 class AddLk(QtWidgets.QWidget):
@@ -89,7 +132,6 @@ class AddLk(QtWidgets.QWidget):
             else:
                 btn.setChecked(False)
 
-
     def init_spec(self):
         all_spec = main.db.load_all_spec()
         groupbox = QGroupBox("Специальности")
@@ -110,6 +152,26 @@ class AddLk(QtWidgets.QWidget):
         self.close()
 
 
+class EditLK(AddLk):
+    def __init__(self, lk):
+        super().__init__()
+        self.lk = lk
+        self.setWindowTitle("Изменить")
+        self.ui.add_btn.setText("Сохранить")
+        self.ui.add_btn.clicked.connect(self.save_lk)
+        self.ui.cancel_btn.setText("Удалить")
+        self.ui.cancel_btn.clicked.connect(self.delete_lk)
+        self.load_lk()
+
+    def load_lk(self):
+        self.ui.TlgLineEdit.setText(self.lk.tlg)
+        self.ui.TlgDateEdit.setDate(QDate(datetime.strptime(self.lk.date_tlg, '%Y-%m-%d')))
+
+    def save_lk(self):
+        pass
+
+    def delete_lk(self):
+        pass
 def except_hook(cls, exception, traceback):
     sys.__excepthook__(cls, exception, traceback)
 

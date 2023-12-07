@@ -43,6 +43,19 @@ class Database:
         self.con.close()
         return result
 
+    def load_all_lk(self):
+        self.con.open()
+        result = []
+        query = QSqlQuery()
+        query.exec("SELECT * from lk")
+        while query.next():
+            lk = LK()
+            lk.unpack_lk_from_db(query.record())
+            result.append(lk)
+        self.con.close()
+        return result
+
+
     def load_all_podr(self) -> list:
         self.con.open()
         result = []
@@ -95,3 +108,5 @@ class Database:
         query.bindValue(':complete', 0)
         query.exec()
         self.con.close()
+
+
