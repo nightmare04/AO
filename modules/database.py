@@ -80,4 +80,18 @@ class Database:
         return result
 
     def add_lk_to_db(self, data: LK):
-        pass
+        self.con.open()
+        query = QSqlQuery()
+        query.prepare("""INSERT into lk values (
+                        null, :tlg, :date_tlg, :date_vypoln, :opisanie,
+                        :lk, null, null, :komu_spec, :komu_planes, :complete)""")
+        query.bindValue(':tlg', data.tlg)
+        query.bindValue(':date_tlg', data.date_tlg)
+        query.bindValue(':date_vypoln', data.srok_tlg)
+        query.bindValue(':opisanie', data.opisanie)
+        query.bindValue(':lk', data.lk)
+        query.bindValue(':komu_spec', json.dumps(data.komu_spec))
+        query.bindValue(':komu_planes', json.dumps(data.komu_planes))
+        query.bindValue(':complete', 0)
+        query.exec()
+        self.con.close()

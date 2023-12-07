@@ -38,6 +38,8 @@ class MainWindow(QtWidgets.QMainWindow):
 class AddLk(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
+        self.spec_btns = []
+        self.plane_btns = []
         self.ui = Ui_Add_lk_form()
         self.ui.setupUi(self)
         self.ui.TlgDateEdit.setDate(QtCore.QDate().currentDate())
@@ -58,9 +60,11 @@ class AddLk(QtWidgets.QWidget):
             groupbox.setLayout(layout_planes)
             groupbox.setCheckable(True)
             for planes in main.db.load_planes_by_podr(podr.id_podr):
-                btn = QPushButton(str(planes.bort_num))
+                btn = QPushButton(text=str(planes.bort_num))
                 btn.setFixedWidth(30)
+                btn.setCheckable(True)
                 btn.plane = planes
+                self.plane_btns.append(btn)
                 if col_plane < 3 :
                     layout_planes.addWidget(btn, row_plane, col_plane)
                     col_plane += 1
@@ -77,7 +81,9 @@ class AddLk(QtWidgets.QWidget):
         self.ui.SpecLayout.addWidget(groupbox)
         for spec in all_spec:
             btn = QPushButton(spec.name_spec)
+            btn.setCheckable(True)
             btn.spec = spec
+            self.spec_btns.append(btn)
             layout_spec.addWidget(btn)
 
     def add_lk_to_db(self):
