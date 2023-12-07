@@ -106,3 +106,21 @@ class Database:
         query.bindValue(':complete', 0)
         query.exec()
         self.con.close()
+
+    def update_lk_in_db(self, lk: LK):
+        self.con.open()
+        query = QSqlQuery()
+        query.exec(
+            f"UPDATE lk SET tlg='{lk.tlg}', "
+            f"date_tlg='{lk.date_tlg}', "
+            f"date_vypoln='{lk.srok_tlg}', "
+            f"opisanie='{lk.opisanie}', "
+            f"lk='{lk.lk}', "
+            f"komu_spec='{lk.komu_spec}', "
+            f"komu_planes='{lk.komu_planes}', "
+            f"complete='{lk.complete}', "
+            f"otvet='{lk.otvet}', "
+            f"date_otvet='{lk.date_otvet}' "
+            f"WHERE id_lk={lk.id_lk}"
+        )
+        self.con.close()

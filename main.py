@@ -75,6 +75,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.add_lk_form.show()
 
     def open_edit_form(self):
+        """Открытие формы редактирования листа контроля"""
         sender = self.sender()
         self.edit_form = EditLK(sender.lk)
         self.edit_form.show()
@@ -96,6 +97,7 @@ class AddLk(QtWidgets.QWidget):
         self.init_spec()
 
     def init_planes(self):
+        """Готовим самолеты"""
         all_podr = main.db.load_all_podr()
         for p in all_podr:
             row_plane = 0
@@ -127,6 +129,7 @@ class AddLk(QtWidgets.QWidget):
                     layout_planes.addWidget(btn, row_plane, col_plane)
 
     def check_toggle(self):
+        """Проверка флага на подразделении"""
         sender = self.sender()
         for btn in sender.plane_btns:
             if sender.isChecked():
@@ -135,6 +138,7 @@ class AddLk(QtWidgets.QWidget):
                 btn.setChecked(False)
 
     def init_spec(self):
+        """Готовим специальности"""
         all_spec = main.db.load_all_spec()
         groupbox = QGroupBox("Специальности")
         layout_spec = QHBoxLayout()
@@ -148,6 +152,7 @@ class AddLk(QtWidgets.QWidget):
             layout_spec.addWidget(btn)
 
     def add_lk_to_db(self):
+        """Добавляем лист контроля в базу данных"""
         data = LK()
         data.pack_lk_from_form(self)
         main.db.add_lk_to_db(data)
@@ -166,6 +171,7 @@ class EditLK(AddLk):
         self.load_lk()
 
     def load_lk(self):
+        """Подгружаем лист контроля"""
         self.ui.TlgLineEdit.setText(self.lk.tlg)
         self.ui.TlgDateEdit.setDate(QDate(datetime.strptime(self.lk.date_tlg, '%Y-%m-%d')))
 
