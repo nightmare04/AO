@@ -176,7 +176,10 @@ class EditLK(AddLk):
         self.ui.TlgDateEdit.setDate(QDate(datetime.strptime(self.lk.date_tlg, '%Y-%m-%d')))
 
     def save_lk(self):
-        pass
+        data = LK()
+        data.pack_lk_from_form(self)
+        main.db.update_lk_in_db(data)
+        self.close()
 
     def delete_lk(self):
         pass
