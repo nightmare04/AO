@@ -1,10 +1,6 @@
 import json
 from dataclasses import dataclass, field
-
 from PyQt6.QtSql import QSqlRecord
-from PyQt6.QtWidgets import QPushButton, QGroupBox, QHBoxLayout
-from PyQt6.QtCore import Qt
-
 from main import AddLk
 
 
@@ -45,14 +41,16 @@ class LK:
         self.komu_planes = self.pack_komu_planes(form)
         self.komu_spec = self.pack_komu_spec(form)
 
-    def pack_komu_planes(self, form: AddLk) -> list:
+    @staticmethod
+    def pack_komu_planes(form: AddLk) -> list:
         result = []
         for btn in form.plane_btns:
             if btn.isChecked():
                 result.append(btn.plane.id_plane)
         return result
 
-    def pack_komu_spec(self, form: AddLk) -> list:
+    @staticmethod
+    def pack_komu_spec(form: AddLk) -> list:
         result = []
         for btn in form.spec_btns:
             if btn.isChecked():

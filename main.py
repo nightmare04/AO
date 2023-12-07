@@ -1,9 +1,9 @@
-from PyQt6.QtWidgets import QGridLayout, QTableWidgetItem
+from PyQt6.QtWidgets import QGridLayout, QTableWidgetItem, QPushButton, QGroupBox, QHBoxLayout
 from PyQt6.QtCore import QDate
 from ui import *
 from modules import *
 import ctypes
-from datetime import datetime, date
+from datetime import datetime
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -14,10 +14,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.db = Database()
+        self.add_lk_form = None
+        self.edit_form = None
         self.lks = []
         self.init_table()
         self.fill_table()
-        self.ui.add_btn.clicked.connect(self.add_lk_form)
+        self.ui.add_btn.clicked.connect(self.add_form)
         self.setWindowTitle("Старший инженер по специальности")
         self.show()
         self.db.check_connection()
@@ -25,7 +27,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def init_table(self):
         """Описываем параметры таблицы долгов"""
         self.lks = self.db.load_all_lk()
-        self.ui.tableWidget.setColumnCount(len(LK().__dict__)+1)
+        self.ui.tableWidget.setColumnCount(len(LK().__dict__)+2)
     #     {'id_lk' 'tlg' 'date_tlg, 'srok_tlg', 'opisanie' 'lk': 'otvet',
     #     'date_otvet':, 'komu_planes', 'komu_spec':, 'complete'}
         self.ui.tableWidget.setHorizontalHeaderLabels([
@@ -40,6 +42,7 @@ class MainWindow(QtWidgets.QMainWindow):
             "На каких самолетах",
             "Специальности",
             "Выполнено",
+            "",
             ""
         ])
         self.ui.tableWidget.hideColumn(0)
@@ -54,23 +57,22 @@ class MainWindow(QtWidgets.QMainWindow):
     def fill_table(self):
         """Заполняем таблицу долгами"""
         row = 0
-        for l in self.lks:
+        for listkontr in self.lks:
             btn = QPushButton("Изменить")
-            btn.lk = l
-            # l = LK()
+            btn.lk = listkontr
             btn.clicked.connect(self.open_edit_form)
-            self.ui.tableWidget.setItem(row, 0, QTableWidgetItem(str(l.id_lk)))
+            self.ui.tableWidget.setItem(row, 0, QTableWidgetItem(str(listkontr.id_lk)))
             self.ui.tableWidget.setCellWidget(row, 11, btn)
-            self.ui.tableWidget.setItem(row, 1, QTableWidgetItem(str(l.tlg)))
-            self.ui.tableWidget.setItem(row, 2, QTableWidgetItem(str(l.date_tlg)))
-            self.ui.tableWidget.setItem(row, 3, QTableWidgetItem(str(l.srok_tlg)))
-            self.ui.tableWidget.setItem(row, 5, QTableWidgetItem(str(l.lk)))
+            self.ui.tableWidget.setItem(row, 1, QTableWidgetItem(str(listkontr.tlg)))
+            self.ui.tableWidget.setItem(row, 2, QTableWidgetItem(str(listkontr.date_tlg)))
+            self.ui.tableWidget.setItem(row, 3, QTableWidgetItem(str(listkontr.srok_tlg)))
+            self.ui.tableWidget.setItem(row, 5, QTableWidgetItem(str(listkontr.lk)))
             row += 1
 
-    def add_lk_form(self):
+    def add_form(self):
         """Открываем новую форму добавления листа контроля"""
-        self.addlk = AddLk()
-        self.addlk.show()
+        self.add_lk_form = AddLk()
+        self.add_lk_form.show()
 
     def open_edit_form(self):
         sender = self.sender()
@@ -95,26 +97,26 @@ class AddLk(QtWidgets.QWidget):
 
     def init_planes(self):
         all_podr = main.db.load_all_podr()
-        for podr in all_podr:
+        for p in all_podr:
             row_plane = 0
             col_plane = 0
-            groupbox = QGroupBox(podr.name_podr)
+            groupbox = QGroupBox(p.name_podr)
             self.ui.planesLayout.addWidget(groupbox)
             layout_planes = QGridLayout()
             groupbox.setLayout(layout_planes)
             groupbox.setCheckable(True)
-            groupbox.podrazd = podr
+            groupbox.podrazd = p
             groupbox.plane_btns = []
             groupbox.toggled.connect(self.check_toggle)
             self.plane_groups.append(groupbox)
-            for planes in main.db.load_planes_by_podr(podr.id_podr):
+            for planes in main.db.load_planes_by_podr(p.id_podr):
                 btn = QPushButton(text=str(planes.bort_num))
                 btn.setFixedWidth(30)
                 btn.setCheckable(True)
                 btn.plane = planes
                 btn.setChecked(True)
                 self.plane_btns.append(btn)
-                if col_plane < 3 :
+                if col_plane < 3:
                     layout_planes.addWidget(btn, row_plane, col_plane)
                     groupbox.plane_btns.append(btn)
                     col_plane += 1
@@ -138,10 +140,10 @@ class AddLk(QtWidgets.QWidget):
         layout_spec = QHBoxLayout()
         groupbox.setLayout(layout_spec)
         self.ui.SpecLayout.addWidget(groupbox)
-        for spec in all_spec:
-            btn = QPushButton(spec.name_spec)
+        for s in all_spec:
+            btn = QPushButton(s.name_spec)
             btn.setCheckable(True)
-            btn.spec = spec
+            btn.spec = s
             self.spec_btns.append(btn)
             layout_spec.addWidget(btn)
 
@@ -153,9 +155,9 @@ class AddLk(QtWidgets.QWidget):
 
 
 class EditLK(AddLk):
-    def __init__(self, lk):
+    def __init__(self, listkontr):
         super().__init__()
-        self.lk = lk
+        self.lk = listkontr
         self.setWindowTitle("Изменить")
         self.ui.add_btn.setText("Сохранить")
         self.ui.add_btn.clicked.connect(self.save_lk)
@@ -172,6 +174,8 @@ class EditLK(AddLk):
 
     def delete_lk(self):
         pass
+
+
 def except_hook(cls, exception, traceback):
     sys.__excepthook__(cls, exception, traceback)
 

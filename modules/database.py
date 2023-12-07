@@ -1,5 +1,4 @@
-import sys
-from PyQt6.QtSql import QSqlDatabase, QSqlQuery, QSqlRecord
+from PyQt6.QtSql import QSqlDatabase, QSqlQuery
 from PyQt6.QtWidgets import QMessageBox
 
 from modules.spec import *
@@ -55,7 +54,6 @@ class Database:
         self.con.close()
         return result
 
-
     def load_all_podr(self) -> list:
         self.con.open()
         result = []
@@ -108,5 +106,3 @@ class Database:
         query.bindValue(':complete', 0)
         query.exec()
         self.con.close()
-
-
