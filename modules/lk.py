@@ -33,10 +33,14 @@ class LK:
         return self
 
     def pack_lk_from_form(self, form: AddLk):
+        self.id_lk = form.lk.id_lk
+        self.complete = form.lk.complete
+        self.otvet = form.lk.otvet
+        self.date_otvet = form.lk.date_otvet
         self.opisanie = form.ui.textEdit.toPlainText()
         self.tlg = form.ui.TlgLineEdit.text()
-        self.date_tlg = str(form.ui.TlgDateEdit.date().toPyDate())
-        self.srok_tlg = str(form.ui.SrokDateEdit.date().toPyDate())
+        self.date_tlg = str(form.ui.TlgDateEdit.date().toString('dd.MM.yyyy'))
+        self.srok_tlg = str(form.ui.SrokDateEdit.date().toString('dd.MM.yyyy'))
         self.lk = form.ui.LkLineEdit.text()
         self.komu_planes = self.pack_komu_planes(form)
         self.komu_spec = self.pack_komu_spec(form)

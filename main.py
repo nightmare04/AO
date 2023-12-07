@@ -24,12 +24,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.show()
         self.db.check_connection()
 
+    def event(self, e):
+        if e.type() == QtCore.QEvent.Type.WindowActivate:
+            self.fill_table()
+        return QtWidgets.QWidget.event(self, e)
+
     def init_table(self):
         """Описываем параметры таблицы долгов"""
-        self.lks = self.db.load_all_lk()
         self.ui.tableWidget.setColumnCount(len(LK().__dict__)+2)
-    #     {'id_lk' 'tlg' 'date_tlg, 'srok_tlg', 'opisanie' 'lk': 'otvet',
-    #     'date_otvet':, 'komu_planes', 'komu_spec':, 'complete'}
         self.ui.tableWidget.setHorizontalHeaderLabels([
             "ID",
             "Телеграмма",
@@ -42,7 +44,7 @@ class MainWindow(QtWidgets.QMainWindow):
             "На каких самолетах",
             "Специальности",
             "Выполнено",
-            "",
+            "Осталось дней",
             ""
         ])
         self.ui.tableWidget.hideColumn(0)
@@ -52,21 +54,23 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.tableWidget.hideColumn(8)
         self.ui.tableWidget.hideColumn(9)
         self.ui.tableWidget.hideColumn(10)
-        self.ui.tableWidget.setRowCount(len(self.lks))
 
     def fill_table(self):
         """Заполняем таблицу долгами"""
+        self.lks = self.db.load_all_lk()
+        self.ui.tableWidget.setRowCount(len(self.lks))
         row = 0
         for listkontr in self.lks:
             btn = QPushButton("Изменить")
             btn.lk = listkontr
             btn.clicked.connect(self.open_edit_form)
+            ost = datetime.strptime(listkontr.srok_tlg, '%d.%m.%Y')-datetime.today()
             self.ui.tableWidget.setItem(row, 0, QTableWidgetItem(str(listkontr.id_lk)))
-            self.ui.tableWidget.setCellWidget(row, 11, btn)
+            self.ui.tableWidget.setCellWidget(row, 12, btn)
             self.ui.tableWidget.setItem(row, 1, QTableWidgetItem(str(listkontr.tlg)))
             self.ui.tableWidget.setItem(row, 2, QTableWidgetItem(str(listkontr.date_tlg)))
             self.ui.tableWidget.setItem(row, 3, QTableWidgetItem(str(listkontr.srok_tlg)))
-            self.ui.tableWidget.setItem(row, 5, QTableWidgetItem(str(listkontr.lk)))
+            self.ui.tableWidget.setItem(row, 11, QTableWidgetItem(str(ost.days)))
             row += 1
 
     def add_form(self):
@@ -84,6 +88,7 @@ class MainWindow(QtWidgets.QMainWindow):
 class AddLk(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
+        self.lk = LK()
         self.spec_btns = []
         self.plane_btns = []
         self.plane_groups = []
@@ -173,8 +178,10 @@ class EditLK(AddLk):
     def load_lk(self):
         """Подгружаем лист контроля"""
         self.ui.TlgLineEdit.setText(self.lk.tlg)
-        self.ui.TlgDateEdit.setDate(QDate(datetime.strptime(self.lk.date_tlg, '%Y-%m-%d')))
-
+        self.ui.TlgDateEdit.setDate(datetime.strptime(self.lk.date_tlg, '%d.%m.%Y'))
+        self.ui.SrokDateEdit.setDate(datetime.strptime(self.lk.srok_tlg, '%d.%m.%Y'))
+        self.ui.textEdit.setText(self.lk.opisanie)
+        self.ui.LkLineEdit.setText(self.lk.lk)
     def save_lk(self):
         data = LK()
         data.pack_lk_from_form(self)
