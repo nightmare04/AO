@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QPushButton, QHBoxLayout, QGroupBox, QVBoxLayout, QGridLayout
+from PyQt6.QtWidgets import QGridLayout
 from PyQt6.QtCore import QDate
 from ui import *
 from modules import *
@@ -40,6 +40,7 @@ class AddLk(QtWidgets.QWidget):
         super().__init__()
         self.spec_btns = []
         self.plane_btns = []
+        self.plane_groups = []
         self.ui = Ui_Add_lk_form()
         self.ui.setupUi(self)
         self.ui.TlgDateEdit.setDate(QtCore.QDate().currentDate())
@@ -59,19 +60,35 @@ class AddLk(QtWidgets.QWidget):
             layout_planes = QGridLayout()
             groupbox.setLayout(layout_planes)
             groupbox.setCheckable(True)
+            groupbox.podrazd = podr
+            groupbox.plane_btns = []
+            groupbox.toggled.connect(self.check_toggle)
+            self.plane_groups.append(groupbox)
             for planes in main.db.load_planes_by_podr(podr.id_podr):
                 btn = QPushButton(text=str(planes.bort_num))
                 btn.setFixedWidth(30)
                 btn.setCheckable(True)
                 btn.plane = planes
+                btn.setChecked(True)
                 self.plane_btns.append(btn)
                 if col_plane < 3 :
                     layout_planes.addWidget(btn, row_plane, col_plane)
+                    groupbox.plane_btns.append(btn)
                     col_plane += 1
                 else:
                     row_plane += 1
                     col_plane = 0
+                    groupbox.plane_btns.append(btn)
                     layout_planes.addWidget(btn, row_plane, col_plane)
+
+    def check_toggle(self):
+        sender = self.sender()
+        for btn in sender.plane_btns:
+            if sender.isChecked():
+                btn.setChecked(True)
+            else:
+                btn.setChecked(False)
+
 
     def init_spec(self):
         all_spec = main.db.load_all_spec()
