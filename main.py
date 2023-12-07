@@ -182,7 +182,8 @@ class EditLK(AddLk):
         self.close()
 
     def delete_lk(self):
-        pass
+        main.db.delete_lk(self.lk)
+        self.close()
 
 
 def except_hook(cls, exception, traceback):

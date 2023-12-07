@@ -124,3 +124,9 @@ class Database:
             f"WHERE id_lk={lk.id_lk}"
         )
         self.con.close()
+
+    def delete_lk(self, lk: LK):
+        self.con.open()
+        query = QSqlQuery()
+        query.exec(f"DELETE from lk WHERE id={lk.id_lk}")
+        self.con.close()
