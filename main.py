@@ -170,8 +170,10 @@ class EditLK(AddLk):
         self.lk = listkontr
         self.setWindowTitle("Изменить")
         self.ui.add_btn.setText("Сохранить")
+        self.ui.add_btn.clicked.disconnect()
         self.ui.add_btn.clicked.connect(self.save_lk)
         self.ui.cancel_btn.setText("Удалить")
+        self.ui.cancel_btn.clicked.disconnect()
         self.ui.cancel_btn.clicked.connect(self.delete_lk)
         self.load_lk()
 
@@ -182,6 +184,7 @@ class EditLK(AddLk):
         self.ui.SrokDateEdit.setDate(datetime.strptime(self.lk.srok_tlg, '%d.%m.%Y'))
         self.ui.textEdit.setText(self.lk.opisanie)
         self.ui.LkLineEdit.setText(self.lk.lk)
+
     def save_lk(self):
         data = LK()
         data.pack_lk_from_form(self)

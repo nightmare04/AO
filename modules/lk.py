@@ -32,7 +32,7 @@ class LK:
         self.complete = record.value('complete')
         return self
 
-    def pack_lk_from_form(self, form: AddLk):
+    def pack_lk_from_form(self, form):
         self.id_lk = form.lk.id_lk
         self.complete = form.lk.complete
         self.otvet = form.lk.otvet
