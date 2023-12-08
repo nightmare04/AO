@@ -11,7 +11,8 @@ class Database:
     def __init__(self):
         super(Database, self).__init__()
 
-    def create_connection(self):
+    @staticmethod
+    def create_connection():
         db = QSqlDatabase.addDatabase("QSQLITE")
         db.setDatabaseName("./database/ias.db")
 
@@ -25,7 +26,8 @@ class Database:
         # TODO Create query to create all tables
         return True
 
-    def execute_query_with_params(self, sql_query, query_values=None):
+    @staticmethod
+    def execute_query_with_params(sql_query, query_values=None):
         query = QSqlQuery()
         query.prepare(sql_query)
         if query_values is not None:
@@ -36,7 +38,8 @@ class Database:
         return query
 
     def load_all(self, table) -> QSqlQuery:
-        query = self.execute_query_with_params(f"SELECT * FROM {table}")
+        query_text = f"SELECT * FROM {table}"
+        query = self.execute_query_with_params(query_text)
         return query
 
     def load_all_planes(self) -> list:
@@ -84,8 +87,8 @@ class Database:
             result.append(plane)
         return result
 
-    def add_lk_to_db(self, data: LK):
-        self.con.open()
+    @staticmethod
+    def add_lk_to_db(data: LK):
         query = QSqlQuery()
         query.prepare("""INSERT into lk values (
                         null, :tlg, :date_tlg, :date_vypoln, :opisanie,
@@ -99,10 +102,9 @@ class Database:
         query.bindValue(':komu_planes', json.dumps(data.komu_planes))
         query.bindValue(':complete', 0)
         query.exec()
-        self.con.close()
 
-    def update_lk_in_db(self, lk: LK):
-        self.con.open()
+    @staticmethod
+    def update_lk_in_db(lk: LK):
         query = QSqlQuery()
         query_text = (f"UPDATE lk SET "
                       f"tlg='{lk.tlg}', "
@@ -117,10 +119,8 @@ class Database:
                       f"date_otvet='{lk.date_otvet}' "
                       f"WHERE id_lk={lk.id_lk}")
         query.exec(query_text)
-        self.con.close()
 
-    def delete_lk(self, lk: LK):
-        self.con.open()
+    @staticmethod
+    def delete_lk(lk: LK):
         query = QSqlQuery()
         query.exec(f"DELETE from lk WHERE id_lk={lk.id_lk}")
-        self.con.close()

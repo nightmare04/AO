@@ -1,4 +1,4 @@
-# Form implementation generated from reading ui file '.\main.ui'
+# Form implementation generated from reading ui file '.\ui\main.ui'
 #
 # Created by: PyQt6 UI code generator 6.6.1
 #
@@ -32,7 +32,7 @@ class Ui_MainWindow(object):
         self.verticalLayout.addWidget(self.groupBox)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(parent=MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 21))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 23))
         self.menubar.setObjectName("menubar")
         self.menu = QtWidgets.QMenu(parent=self.menubar)
         self.menu.setObjectName("menu")
@@ -52,17 +52,17 @@ class Ui_MainWindow(object):
         self.action_2.setObjectName("action_2")
         self.action_3 = QtGui.QAction(parent=MainWindow)
         self.action_3.setObjectName("action_3")
-        self.action_4 = QtGui.QAction(parent=MainWindow)
-        self.action_4.setObjectName("action_4")
-        self.action_5 = QtGui.QAction(parent=MainWindow)
-        self.action_5.setObjectName("action_5")
+        self.podr_setup_action = QtGui.QAction(parent=MainWindow)
+        self.podr_setup_action.setObjectName("podr_setup_action")
+        self.spec_setup_action = QtGui.QAction(parent=MainWindow)
+        self.spec_setup_action.setObjectName("spec_setup_action")
         self.action_6 = QtGui.QAction(parent=MainWindow)
         self.action_6.setObjectName("action_6")
         self.menu.addAction(self.action)
         self.menu.addAction(self.action_2)
         self.menu_2.addAction(self.action_3)
-        self.menu_4.addAction(self.action_4)
-        self.menu_4.addAction(self.action_5)
+        self.menu_4.addAction(self.podr_setup_action)
+        self.menu_4.addAction(self.spec_setup_action)
         self.menu_4.addAction(self.action_6)
         self.menubar.addAction(self.menu.menuAction())
         self.menubar.addAction(self.menu_2.menuAction())
@@ -84,6 +84,6 @@ class Ui_MainWindow(object):
         self.action.setText(_translate("MainWindow", "Экспорт"))
         self.action_2.setText(_translate("MainWindow", "Настройки"))
         self.action_3.setText(_translate("MainWindow", "Листы контроля"))
-        self.action_4.setText(_translate("MainWindow", "Подразделения"))
-        self.action_5.setText(_translate("MainWindow", "Специальности"))
+        self.podr_setup_action.setText(_translate("MainWindow", "Подразделения"))
+        self.spec_setup_action.setText(_translate("MainWindow", "Специальности"))
         self.action_6.setText(_translate("MainWindow", "Самолеты"))

@@ -42,7 +42,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>21</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu">
@@ -67,8 +67,8 @@
     <property name="title">
      <string>Настройки</string>
     </property>
-    <addaction name="action_4"/>
-    <addaction name="action_5"/>
+    <addaction name="podr_setup_action"/>
+    <addaction name="spec_setup_action"/>
     <addaction name="action_6"/>
    </widget>
    <addaction name="menu"/>
@@ -92,12 +92,12 @@
     <string>Листы контроля</string>
    </property>
   </action>
-  <action name="action_4">
+  <action name="podr_setup_action">
    <property name="text">
     <string>Подразделения</string>
    </property>
   </action>
-  <action name="action_5">
+  <action name="spec_setup_action">
    <property name="text">
     <string>Специальности</string>
    </property>
