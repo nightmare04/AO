@@ -2,18 +2,19 @@ import json
 from dataclasses import dataclass, field
 from PyQt6.QtSql import QSqlRecord
 from main import AddLk
+from datetime import datetime
 
 
 @dataclass
 class LK:
     id_lk: str = ''
     tlg: str = ''
-    date_tlg: str = ''
-    srok_tlg: str = ''
+    date_tlg: datetime = datetime.today()
+    date_vypoln: datetime = datetime.today()
     opisanie: str = ''
     lk: str = ''
     otvet: str = ''
-    date_otvet: str = ''
+    date_otvet: datetime = datetime.today()
     komu_planes: list = field(default_factory=list)
     komu_spec: list = field(default_factory=list)
     complete: int = 0
@@ -22,7 +23,7 @@ class LK:
         self.id_lk = record.value('id_lk')
         self.tlg = record.value('tlg')
         self.date_tlg = record.value('date_tlg')
-        self.srok_tlg = record.value('date_vypoln')
+        self.date_vypoln = record.value('date_vypoln')
         self.opisanie = record.value('opisanie')
         self.lk = record.value('lk')
         self.otvet = record.value('otvet')
@@ -39,8 +40,8 @@ class LK:
         self.date_otvet = form.lk.date_otvet
         self.opisanie = form.ui.textEdit.toPlainText()
         self.tlg = form.ui.TlgLineEdit.text()
-        self.date_tlg = str(form.ui.TlgDateEdit.date().toString('dd.MM.yyyy'))
-        self.srok_tlg = str(form.ui.SrokDateEdit.date().toString('dd.MM.yyyy'))
+        self.date_tlg = form.ui.TlgDateEdit.date().toString('dd.MM.yyyy')
+        self.date_vypoln = form.ui.SrokDateEdit.date().toString('dd.MM.yyyy')
         self.lk = form.ui.LkLineEdit.text()
         self.komu_planes = self.pack_komu_planes(form)
         self.komu_spec = self.pack_komu_spec(form)

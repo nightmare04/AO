@@ -64,13 +64,13 @@ class MainWindow(QtWidgets.QMainWindow):
             btn = QPushButton("Изменить")
             btn.lk = listkontr
             btn.clicked.connect(self.open_edit_form)
-            ost = datetime.strptime(listkontr.srok_tlg, '%d.%m.%Y')-datetime.today()
+            ost = (datetime.strptime(listkontr.date_vypoln, '%d.%m.%Y') - datetime.today())
             self.ui.tableWidget.setItem(row, 0, QTableWidgetItem(str(listkontr.id_lk)))
             self.ui.tableWidget.setCellWidget(row, 12, btn)
             self.ui.tableWidget.setItem(row, 1, QTableWidgetItem(str(listkontr.tlg)))
             self.ui.tableWidget.setItem(row, 2, QTableWidgetItem(str(listkontr.date_tlg)))
-            self.ui.tableWidget.setItem(row, 3, QTableWidgetItem(str(listkontr.srok_tlg)))
-            self.ui.tableWidget.setItem(row, 11, QTableWidgetItem(str(ost.days)))
+            self.ui.tableWidget.setItem(row, 3, QTableWidgetItem(str(listkontr.date_vypoln)))
+            self.ui.tableWidget.setItem(row, 11, QTableWidgetItem(str(ost.days + 1)))
             row += 1
 
     def add_form(self):
@@ -86,7 +86,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
 class AddLk(QtWidgets.QWidget):
-    def __init__(self):
+    def __init__(self, parent=None):
         super().__init__()
         self.lk = LK()
         self.spec_btns = []
@@ -181,9 +181,18 @@ class EditLK(AddLk):
         """Подгружаем лист контроля"""
         self.ui.TlgLineEdit.setText(self.lk.tlg)
         self.ui.TlgDateEdit.setDate(datetime.strptime(self.lk.date_tlg, '%d.%m.%Y'))
-        self.ui.SrokDateEdit.setDate(datetime.strptime(self.lk.srok_tlg, '%d.%m.%Y'))
+        self.ui.SrokDateEdit.setDate(datetime.strptime(self.lk.date_vypoln, '%d.%m.%Y'))
         self.ui.textEdit.setText(self.lk.opisanie)
         self.ui.LkLineEdit.setText(self.lk.lk)
+        for plane_btn in self.plane_btns:
+            plane_btn.setChecked(False)
+            if plane_btn.plane.id_plane in self.lk.komu_planes:
+                plane_btn.setChecked(True)
+
+        for spec_btn in self.spec_btns:
+            spec_btn.setChecked(False)
+            if spec_btn.spec.id_spec in self.lk.komu_spec:
+                spec_btn.setChecked(True)
 
     def save_lk(self):
         data = LK()

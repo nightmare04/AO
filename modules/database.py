@@ -98,7 +98,7 @@ class Database:
                         :lk, null, null, :komu_spec, :komu_planes, :complete)""")
         query.bindValue(':tlg', data.tlg)
         query.bindValue(':date_tlg', data.date_tlg)
-        query.bindValue(':date_vypoln', data.srok_tlg)
+        query.bindValue(':date_vypoln', data.date_vypoln)
         query.bindValue(':opisanie', data.opisanie)
         query.bindValue(':lk', data.lk)
         query.bindValue(':komu_spec', json.dumps(data.komu_spec))
@@ -113,7 +113,7 @@ class Database:
         query_text = (f"UPDATE lk SET "
                       f"tlg='{lk.tlg}', "
                       f"date_tlg='{lk.date_tlg}', "
-                      f"date_vypoln='{lk.srok_tlg}', "
+                      f"date_vypoln='{lk.date_vypoln}', "
                       f"opisanie='{lk.opisanie}', "
                       f"lk='{lk.lk}', "
                       f"komu_spec='{lk.komu_spec}', "
