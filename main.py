@@ -22,7 +22,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.add_btn.clicked.connect(self.add_form)
         self.setWindowTitle("Старший инженер по специальности")
         self.show()
-        self.db.check_connection()
+        self.db.create_connection()
 
     def event(self, e):
         if e.type() == QtCore.QEvent.Type.WindowActivate:
@@ -98,40 +98,61 @@ class AddLk(QtWidgets.QWidget):
         self.ui.SrokDateEdit.setDate(QtCore.QDate().currentDate())
         self.ui.add_btn.clicked.connect(self.add_lk_to_db)
         self.ui.cancel_btn.clicked.connect(self.close)
+        self.fill_planes()
         self.init_planes()
         self.init_spec()
+        self.setAcceptDrops(True)
+
+    def fill_planes(self):
+        for plane in main.db.load_all_planes():
+            btn = DragButton(text=str(plane.bort_num))
+            btn.setFixedWidth(30)
+            btn.setCheckable(True)
+            btn.plane = plane
+            btn.setChecked(True)
+            self.plane_btns.append(btn)
 
     def init_planes(self):
-        """Готовим самолеты"""
         all_podr = main.db.load_all_podr()
-        for p in all_podr:
-            row_plane = 0
-            col_plane = 0
-            groupbox = QGroupBox(p.name_podr)
-            self.ui.planesLayout.addWidget(groupbox)
+        for podr in all_podr:
+            row = 0
+            col = 0
+            groupbox = DragGroupbox(podr.name_podr)
             layout_planes = QGridLayout()
             groupbox.setLayout(layout_planes)
             groupbox.setCheckable(True)
-            groupbox.podrazd = p
+            groupbox.podr = podr
             groupbox.plane_btns = []
             groupbox.toggled.connect(self.check_toggle)
+            self.ui.planesLayout.addWidget(groupbox)
             self.plane_groups.append(groupbox)
-            for planes in main.db.load_planes_by_podr(p.id_podr):
-                btn = QPushButton(text=str(planes.bort_num))
-                btn.setFixedWidth(30)
-                btn.setCheckable(True)
-                btn.plane = planes
-                btn.setChecked(True)
-                self.plane_btns.append(btn)
-                if col_plane < 3:
-                    layout_planes.addWidget(btn, row_plane, col_plane)
-                    groupbox.plane_btns.append(btn)
-                    col_plane += 1
-                else:
-                    row_plane += 1
-                    col_plane = 0
-                    groupbox.plane_btns.append(btn)
-                    layout_planes.addWidget(btn, row_plane, col_plane)
+            for plane_btn in self.plane_btns:
+                if plane_btn.plane.id_podr == podr.id_podr:
+                    if col < 3:
+                        layout_planes.addWidget(plane_btn, row, col)
+                        col += 1
+                    else:
+                        row += 1
+                        col = 0
+                        layout_planes.addWidget(plane_btn, row, col)
+                        col += 1
+
+    def update_planes(self):
+        for groupbox in self.plane_groups:
+            layout = QGridLayout()
+            groupbox.setLayout(layout)
+            col = 0
+            row = 0
+            for plane_btn in self.plane_btns:
+                if plane_btn.plane.id_podr == groupbox.podr.id_podr:
+                    if col < 3:
+                        groupbox.layout().addWidget(plane_btn, row, col)
+                        col += 1
+                    else:
+                        col = 0
+                        row += 1
+                        groupbox.layout().addWidget(plane_btn, row, col)
+                        col += 1
 
     def check_toggle(self):
         """Проверка флага на подразделении"""
@@ -159,7 +180,7 @@ class AddLk(QtWidgets.QWidget):
     def add_lk_to_db(self):
         """Добавляем лист контроля в базу данных"""
         data = LK()
-        data.pack_lk_from_form(self)
+        data.pack_lk(self)
         main.db.add_lk_to_db(data)
         self.close()
 
@@ -196,7 +217,7 @@ class EditLK(AddLk):
 
     def save_lk(self):
         data = LK()
-        data.pack_lk_from_form(self)
+        data.pack_lk(self)
         main.db.update_lk_in_db(data)
         self.close()
 

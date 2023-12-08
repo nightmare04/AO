@@ -19,7 +19,7 @@ class LK:
     komu_spec: list = field(default_factory=list)
     complete: int = 0
 
-    def unpack_lk_from_db(self, record: QSqlRecord):
+    def unpack_lk(self, record: QSqlRecord):
         self.id_lk = record.value('id_lk')
         self.tlg = record.value('tlg')
         self.date_tlg = record.value('date_tlg')
@@ -33,7 +33,7 @@ class LK:
         self.complete = record.value('complete')
         return self
 
-    def pack_lk_from_form(self, form):
+    def pack_lk(self, form):
         self.id_lk = form.lk.id_lk
         self.complete = form.lk.complete
         self.otvet = form.lk.otvet

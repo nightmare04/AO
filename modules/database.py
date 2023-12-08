@@ -9,85 +9,79 @@ from modules.lk import *
 
 class Database:
     def __init__(self):
-        self.con = QSqlDatabase.addDatabase("QSQLITE")
-        self.con.setDatabaseName("./database/ias.db")
+        super(Database, self).__init__()
 
-    def check_connection(self):
-        if not self.con.open():
+    def create_connection(self):
+        db = QSqlDatabase.addDatabase("QSQLITE")
+        db.setDatabaseName("./database/ias.db")
+
+        if not db.open():
             QMessageBox.critical(
                 None, "Ошибка базы данных",
-                "Database Error: %s" % self.con.lastError().databaseText(),
+                "Database Error: %s" % db.lastError().databaseText(), QMessageBox.Cancel
             )
-            self.con.close()
+            return False
 
-    def load_data_by_query(self, text: str) -> list:
-        self.con.open()
+        # TODO Create query to create all tables
+        return True
+
+    def execute_query_with_params(self, sql_query, query_values=None):
         query = QSqlQuery()
-        query.exec(text)
-        record = []
-        while query.next():
-            record.append(query.record())
-        self.con.close()
-        return record
+        query.prepare(sql_query)
+        if query_values is not None:
+            for query_value in query_values:
+                query.addBindValue(query_value)
+
+        query.exec()
+        return query
+
+    def load_all(self, table) -> QSqlQuery:
+        query = self.execute_query_with_params(f"SELECT * FROM {table}")
+        return query
 
     def load_all_planes(self) -> list:
-        self.con.open()
         result = []
-        query = QSqlQuery()
-        query.exec("SELECT * FROM planes")
+        query = self.load_all('planes')
         while query.next():
             plane = Plane()
             plane.unpack_plane(query.record())
             result.append(plane)
-        self.con.close()
         return result
 
-    def load_all_lk(self):
-        self.con.open()
+    def load_all_lk(self) -> list:
         result = []
-        query = QSqlQuery()
-        query.exec("SELECT * from lk")
+        query = self.load_all('lk')
         while query.next():
             lk = LK()
-            lk.unpack_lk_from_db(query.record())
+            lk.unpack_lk(query.record())
             result.append(lk)
-        self.con.close()
         return result
 
     def load_all_podr(self) -> list:
-        self.con.open()
         result = []
-        query = QSqlQuery()
-        query.exec("SELECT * FROM podr")
+        query = self.load_all('podr')
         while query.next():
             podr = Podr()
             podr.unpack_podr(query.record())
             result.append(podr)
-        self.con.close()
         return result
 
     def load_all_spec(self) -> list:
-        self.con.open()
         result = []
-        query = QSqlQuery()
-        query.exec("SELECT * FROM spec")
+        query = self.load_all('spec')
         while query.next():
             spec = Spec()
-            spec.unpack_podr(query.record())
+            spec.unpack_spec(query.record())
             result.append(spec)
-        self.con.close()
         return result
 
     def load_planes_by_podr(self, id_podr) -> list:
-        self.con.open()
         result = []
-        query = QSqlQuery()
-        query.exec(f"SELECT * FROM planes WHERE id_podr={id_podr}")
+        query = self.execute_query_with_params(f"SELECT * FROM planes WHERE id_podr={id_podr}")
         while query.next():
             plane = Plane()
             plane.unpack_plane(query.record())
             result.append(plane)
-        self.con.close()
         return result
 
     def add_lk_to_db(self, data: LK):
