@@ -72,6 +72,19 @@ class Database:
             result.append(plane)
         return result
 
+    def load_all_planes_table(self) -> list:
+        result = []
+        query_text = ("SELECT planes.id_plane, planes_type.name_type, planes.bort_num, planes.zav_num, podr.name_podr "
+                      "FROM planes "
+                      "INNER JOIN planes_type "
+                      "ON planes.id_type = planes_type.id_type "
+                      "INNER JOIN podr "
+                      "ON planes.id_podr = podr.id_podr")
+        query = self.query_wp(query_text)
+        while query.next():
+            result.append(query.record())
+        return result
+
     def load_all_spec(self) -> list:
         result = []
         query = self.load_all('spec')
@@ -184,3 +197,16 @@ class Database:
 
     def delete_type(self, id_type):
         self.query_wp("DELETE FROM planes_type WHERE id_type=?", [id_type])
+
+    def add_plane(self, plane: Plane):
+        self.query_wp(
+            "INSERT INTO planes (id_type, id_podr, bort_num, zav_num) VALUES(?, ?, ?, ?)",
+            [plane.id_type, plane.id_podr, plane.bort_num, plane.zav_num])
+        return
+
+    def update_plane(self, plane: Plane):
+        self.query_wp("UPDATE planes SET id_type=?, id_podr=?, bort_num=?, zav_num=? WHERE id_type=?",
+                      [plane.id_type, plane.id_podr, plane.bort_num, plane.zav_num])
+
+    def delete_plane(self, id_plane):
+        self.query_wp("DELETE FROM planes WHERE id_plane=?", [id_plane])

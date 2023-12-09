@@ -14,7 +14,7 @@ class Type:
         self.name_type = record.value('name_type')
         return self
 
-    def pack_type(self, form: AddType):
+    def pack_type(self, form):
         self.id_type = form.type.id_type
         self.name_type = form.name_edit.text()
         return self
