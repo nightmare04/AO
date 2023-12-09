@@ -119,6 +119,60 @@ class AddLk(QtWidgets.QWidget):
         self.init_planes()
         self.init_spec()
         self.setAcceptDrops(True)
+        self.fill_selector()
+
+    def fill_selector(self):
+        main_groupbox = QGroupBox("Выбрать:")
+        group_layout = QHBoxLayout()
+        main_groupbox.setLayout(group_layout)
+        self.ui.selectorLayout.addWidget(main_groupbox)
+
+        podr_groupbox = QGroupBox("по подразделению:")
+        group_layout.addWidget(podr_groupbox)
+        podr_groupbox_layout = QGridLayout()
+        podr_groupbox.setLayout(podr_groupbox_layout)
+        podrs = db.load_all_podr()
+
+        row = 0
+        col = 0
+        for tp in podrs:
+            btn = QPushButton(tp.name_podr)
+            btn.podr = tp
+            if col < 4:
+                podr_groupbox_layout.addWidget(btn, row, col)
+                col += 1
+            else:
+                col = 0
+                row += 1
+                podr_groupbox_layout.addWidget(btn, row, col)
+                col += 1
+
+        type_groupbox = QGroupBox("по типу:")
+        group_layout.addWidget(type_groupbox)
+        type_groupbox_layout = QGridLayout()
+        type_groupbox.setLayout(type_groupbox_layout)
+        types = db.load_all_type()
+
+        row = 0
+        col = 0
+        for tp in types:
+            btn = QPushButton(tp.name_type)
+            btn.type = tp
+            if col < 4:
+                type_groupbox_layout.addWidget(btn, row, col)
+                col += 1
+            else:
+                col = 0
+                row += 1
+                type_groupbox_layout.addWidget(btn, row, col)
+                col += 1
+
+
+
+
+
+
+
 
     def fill_planes(self):
         for p in db.load_all_planes():
@@ -140,7 +194,7 @@ class AddLk(QtWidgets.QWidget):
             groupbox.setCheckable(True)
             groupbox.podr = p
             groupbox.plane_btns = []
-            groupbox.toggled.connect(self.check_toggle)
+            # groupbox.toggled.connect(self.check_toggle)
             self.ui.planesLayout.addWidget(groupbox)
             self.plane_groups.append(groupbox)
             for plane_btn in self.plane_btns:
@@ -225,8 +279,11 @@ class EditLK(AddLk):
             btn.setFixedWidth(30)
             btn.setCheckable(True)
             btn.plane = p
-            btn.setChecked(True)
             self.plane_btns.append(btn)
+
+        for btn in self.plane_btns:
+            if btn.plane.id_plane in self.lk.komu_planes:
+                btn.setChecked(True)
 
     def load_lk(self):
         """Подгружаем лист контроля"""

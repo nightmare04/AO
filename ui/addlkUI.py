@@ -13,7 +13,7 @@ class Ui_Add_lk_form(object):
     def setupUi(self, Add_lk_form):
         Add_lk_form.setObjectName("Add_lk_form")
         Add_lk_form.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
-        Add_lk_form.resize(712, 430)
+        Add_lk_form.resize(691, 646)
         self.verticalLayout = QtWidgets.QVBoxLayout(Add_lk_form)
         self.verticalLayout.setObjectName("verticalLayout")
         self.formLayout = QtWidgets.QFormLayout()
@@ -54,6 +54,9 @@ class Ui_Add_lk_form(object):
         self.SpecLayout = QtWidgets.QHBoxLayout()
         self.SpecLayout.setObjectName("SpecLayout")
         self.verticalLayout.addLayout(self.SpecLayout)
+        self.selectorLayout = QtWidgets.QHBoxLayout()
+        self.selectorLayout.setObjectName("selectorLayout")
+        self.verticalLayout.addLayout(self.selectorLayout)
         self.planesLayout = QtWidgets.QHBoxLayout()
         self.planesLayout.setObjectName("planesLayout")
         self.verticalLayout.addLayout(self.planesLayout)

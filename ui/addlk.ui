@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>712</width>
-    <height>430</height>
+    <width>691</width>
+    <height>646</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -81,6 +81,9 @@
    </item>
    <item>
     <layout class="QHBoxLayout" name="SpecLayout"/>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="selectorLayout"/>
    </item>
    <item>
     <layout class="QHBoxLayout" name="planesLayout"/>
