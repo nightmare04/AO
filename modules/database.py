@@ -95,7 +95,7 @@ class Database:
         return result
 
     def load_plane(self, id_plane):
-        query = self.query_wp(f"SELECT * FROM planes WHERE id_plane={id_plane}")
+        query = self.query_wp("SELECT * FROM planes WHERE id_plane=?", [id_plane])
         query.next()
         return query.record()
 
