@@ -200,3 +200,12 @@ class Database:
         query_text = ("DELETE FROM lk_compl WHERE id_lk=? AND id_plane=? AND id_spec=?")
         query_values = [listk.id_lk, pl.id_plane, spec.id_spec]
         self.query_wp(query_text, query_values)
+
+    def get_complete(self, listk: LK, pl: Plane) -> list:
+        result = []
+        query_text = ("SELECT id_spec FROM lk_compl WHERE id_lk=? AND id_plane=?")
+        query_values = [listk.id_lk, pl.id_plane]
+        query = self.query_wp(query_text, query_values)
+        while query.next():
+            result.append(query.value(0))
+        return result

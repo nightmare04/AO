@@ -352,15 +352,19 @@ class Complete(QtWidgets.QWidget):
         for p in all_podr:
             row = 0
             col = 0
+
             groupbox = QGroupBox(p.name_podr)
             layout_planes = QGridLayout()
             groupbox.setLayout(layout_planes)
             groupbox.podr = p
             groupbox.plane_btns = []
-            self.ui.podr_layout.addWidget(groupbox)
-            self.plane_groups.append(groupbox)
+
+            if p.with_planes:
+                self.ui.podr_layout.addWidget(groupbox)
+                self.plane_groups.append(groupbox)
+
             for plane_btn in self.plane_btns:
-                if plane_btn.plane.id_podr == p.id_podr:
+                if plane_btn.plane.id_plane in self.lk.komu_planes and plane_btn.plane.id_podr == p.id_podr:
                     if col < 3:
                         layout_planes.addWidget(plane_btn, row, col)
                         col += 1
@@ -369,6 +373,7 @@ class Complete(QtWidgets.QWidget):
                         col = 0
                         layout_planes.addWidget(plane_btn, row, col)
                         col += 1
+
 
     def open_plane_complete(self):
         sender = self.sender()
@@ -379,6 +384,7 @@ class Complete(QtWidgets.QWidget):
 class EditComplete(QtWidgets.QWidget):
     def __init__(self, pl, listk, parent=None):
         super().__init__(parent)
+        self.compl = db.get_complete(listk, pl)
         self.lk = listk
         self.plane = pl
         self.resize(250, 200)
@@ -394,6 +400,8 @@ class EditComplete(QtWidgets.QWidget):
             btn.clicked.connect(self.handle_spec)
             if btn.spec.id_spec in btn.lk.komu_spec:
                 self.main_layout.addWidget(btn)
+                if int(btn.spec.id_spec) in self.compl:
+                    btn.setChecked(True)
 
     def handle_spec(self):
         sender = self.sender()
