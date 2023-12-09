@@ -585,7 +585,7 @@ class AddType(QtWidgets.QWidget):
         self.setLayout(self.main_layout)
         self.setWindowTitle(f'Добавить тип самолета')
         self.resize(300, 100)
-        self.label = QLabel('Введите имя:')
+        self.label = QLabel('Введите тип:')
         self.name_edit = QLineEdit()
         self.main_layout.addWidget(self.label, 0, 0)
         self.main_layout.addWidget(self.name_edit, 0, 1)
