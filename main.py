@@ -105,6 +105,7 @@ class MainWindow(QtWidgets.QMainWindow):
 class AddLk(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
+        self.selectors_by_podr = []
         self.lk = LK()
         self.spec_btns = []
         self.plane_btns = []
@@ -136,16 +137,19 @@ class AddLk(QtWidgets.QWidget):
         row = 0
         col = 0
         for pd in podrs:
-            btn = QPushButton(tp.name_podr)
+            btn = QPushButton(pd.name_podr)
+            btn.setCheckable(True)
             btn.clicked.connect(self.select_by_podr)
             btn.podr = pd
             if col < 4:
                 podr_groupbox_layout.addWidget(btn, row, col)
+                self.selectors_by_podr.append(btn)
                 col += 1
             else:
                 col = 0
                 row += 1
                 podr_groupbox_layout.addWidget(btn, row, col)
+                self.selectors_by_podr.append(btn)
                 col += 1
 
         type_groupbox = QGroupBox("по типу:")
@@ -158,6 +162,7 @@ class AddLk(QtWidgets.QWidget):
         col = 0
         for tp in types:
             btn = QPushButton(tp.name_type)
+            btn.setCheckable(True)
             btn.clicked.connect(self.select_by_type)
             btn.type = tp
             if col < 4:
@@ -170,11 +175,13 @@ class AddLk(QtWidgets.QWidget):
                 col += 1
 
     def select_by_podr(self):
-        sender = self.sender()
         btns = self.findChildren(DragButton)
-        for btn in btns:
-            if btn.plane.id_podr == sen
-
+        for sel_podr in self.selectors_by_podr:
+            for btn in btns:
+                if btn.plane.id_podr == sel_podr.podr.id_podr and sel_podr.isChecked():
+                    btn.setChecked(True)
+                elif btn.plane.id_podr == sel_podr.podr.id_podr:
+                    btn.setChecked(False)
 
     def select_by_type(self):
         pass
@@ -190,7 +197,6 @@ class AddLk(QtWidgets.QWidget):
             btn.setFixedWidth(30)
             btn.setCheckable(True)
             btn.plane = p
-            btn.setChecked(True)
             self.plane_btns.append(btn)
 
     def init_planes(self):
@@ -234,7 +240,7 @@ class AddLk(QtWidgets.QWidget):
                         row += 1
                         groupbox.layout().addWidget(plane_btn, row, col)
                         col += 1
-
+        self.select_by_podr()
     def check_toggle(self):
         """Проверка флага на подразделении"""
         sender = self.sender()
