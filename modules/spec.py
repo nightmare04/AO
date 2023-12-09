@@ -16,4 +16,5 @@ class Spec:
     def pack_spec(self, form: AddSpec):
         self.id_spec = form.spec.id_spec
         self.name_spec = form.name_edit.text()
+
         return self

@@ -152,13 +152,13 @@ class Database:
                       [id_spec])
 
     def add_podr(self, podr):
-        self.query_wp("INSERT INTO podr (name_podr) VALUES(?)", [podr.name_podr])
+        self.query_wp("INSERT INTO podr (name_podr, with_planes) VALUES(?, ?)", [podr.name_podr, podr.with_planes])
         return
 
     def update_podr(self, podr):
         self.query_wp(
-            "UPDATE podr SET name_podr=? WHERE id_podr=?",
-            [podr.name_podr, podr.id_podr])
+            "UPDATE podr SET name_podr=?, with_planes=? WHERE id_podr=?",
+            [podr.name_podr, podr.with_planes, podr.id_podr])
 
     def delete_podr(self, id_podr):
         self.query_wp("DELETE FROM podr WHERE id_podr=?", [id_podr])
