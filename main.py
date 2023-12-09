@@ -67,8 +67,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.tableWidget.cellDoubleClicked.connect(lambda row: self.open_complete_form(row))
 
     def open_complete_form(self, row):
-        lk = db.load_lk(self.ui.tableWidget.item(row, 0).text())
-        self.edit_complete = Complete(lk)
+        listk = db.load_lk(self.ui.tableWidget.item(row, 0).text())
+        self.edit_complete = Complete(listk)
         self.edit_complete.show()
 
     def fill_table(self):
@@ -76,16 +76,16 @@ class MainWindow(QtWidgets.QMainWindow):
         self.lks = db.load_all_lk()
         self.ui.tableWidget.setRowCount(len(self.lks))
         row = 0
-        for lk in self.lks:
+        for listk in self.lks:
             btn = QPushButton("Изменить")
-            btn.lk = lk
+            btn.lk = listk
             btn.clicked.connect(self.open_edit_form)
-            ost = (datetime.strptime(lk.date_vypoln, '%d.%m.%Y') - datetime.today())
-            self.ui.tableWidget.setItem(row, 0, QTableWidgetItem(str(lk.id_lk)))
-            self.ui.tableWidget.setItem(row, 1, QTableWidgetItem(str(lk.tlg)))
-            self.ui.tableWidget.setItem(row, 2, QTableWidgetItem(str(lk.date_tlg)))
-            self.ui.tableWidget.setItem(row, 3, QTableWidgetItem(str(lk.date_vypoln)))
-            self.ui.tableWidget.setItem(row, 4, QTableWidgetItem(str(lk.lk)))
+            ost = (datetime.strptime(listk.date_vypoln, '%d.%m.%Y') - datetime.today())
+            self.ui.tableWidget.setItem(row, 0, QTableWidgetItem(str(listk.id_lk)))
+            self.ui.tableWidget.setItem(row, 1, QTableWidgetItem(str(listk.tlg)))
+            self.ui.tableWidget.setItem(row, 2, QTableWidgetItem(str(listk.date_tlg)))
+            self.ui.tableWidget.setItem(row, 3, QTableWidgetItem(str(listk.date_vypoln)))
+            self.ui.tableWidget.setItem(row, 4, QTableWidgetItem(str(listk.lk)))
             self.ui.tableWidget.setItem(row, 5, QTableWidgetItem(str(ost.days + 1)))
             self.ui.tableWidget.setCellWidget(row, 6, btn)
             row += 1
@@ -203,9 +203,9 @@ class AddLk(QtWidgets.QWidget):
 
 
 class EditLK(AddLk):
-    def __init__(self, lk):
+    def __init__(self, listk):
         super().__init__()
-        self.lk = lk
+        self.lk = listk
         self.setWindowTitle("Изменить")
         self.ui.add_btn.setText("Сохранить")
         self.ui.add_btn.clicked.disconnect()
@@ -257,10 +257,10 @@ class EditLK(AddLk):
 
 
 class Complete(QtWidgets.QWidget):
-    def __init__(self, lk):
+    def __init__(self, listk):
         super().__init__()
         self.plane_complete = None
-        self.lk = lk
+        self.lk = listk
         self.podrs = []
         self.plane_btns = []
         self.plane_groups = []
@@ -271,11 +271,11 @@ class Complete(QtWidgets.QWidget):
 
     def init_planes(self):
         for id_plane, id_podr in self.lk.planes.items():
-            plane = db.load_plane(id_plane)
-            plane.id_podr = id_podr
-            btn = QPushButton(text=str(plane.bort_num))
+            pl = db.load_plane(id_plane)
+            pl.id_podr = id_podr
+            btn = QPushButton(text=str(pl.bort_num))
             btn.setFixedWidth(30)
-            btn.plane = plane
+            btn.plane = pl
             btn.clicked.connect(self.open_plane_complete)
             btn.setChecked(True)
             self.plane_btns.append(btn)
@@ -308,9 +308,9 @@ class Complete(QtWidgets.QWidget):
 
 
 class EditComplete(QtWidgets.QWidget):
-    def __init__(self, p, lk, parent=None):
+    def __init__(self, p, listk, parent=None):
         super().__init__(parent)
-        self.lk = lk
+        self.lk = listk
         self.plane = p
         self.resize(200, 200)
         self.setWindowTitle(f'Самолет {self.plane.bort_num}')
