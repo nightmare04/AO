@@ -1,4 +1,5 @@
-from PyQt6.QtWidgets import QGridLayout, QTableWidgetItem, QPushButton, QGroupBox, QHBoxLayout, QLabel, QLineEdit, QComboBox
+from PyQt6.QtWidgets import (QGridLayout, QTableWidgetItem, QPushButton, QGroupBox,
+                             QHBoxLayout, QVBoxLayout, QLabel, QLineEdit, QComboBox)
 from PyQt6.QtCore import QDate
 from ui import *
 from modules import *
@@ -16,6 +17,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.add_lk_form = None
         self.edit_form = None
         self.setup_window = None
+        self.edit_complete = None
         self.lks = []
         self.init_table()
         self.fill_table()
@@ -51,29 +53,24 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def init_table(self):
         """Описываем параметры таблицы долгов"""
-        self.ui.tableWidget.setColumnCount(len(LK().__dict__)+1)
+        self.ui.tableWidget.setColumnCount(7)
         self.ui.tableWidget.setHorizontalHeaderLabels([
             "ID",
             "Телеграмма",
             "Дата ТЛГ",
             "Срок выполнения",
-            "Описание",
             "Номер ЛК",
-            "Ответ",
-            "Дата ответа",
-            "На каких самолетах",
-            "Специальности",
-            "Выполнено",
             "Осталось дней",
             ""
         ])
         self.ui.tableWidget.hideColumn(0)
-        self.ui.tableWidget.hideColumn(4)
-        self.ui.tableWidget.hideColumn(6)
-        self.ui.tableWidget.hideColumn(7)
-        self.ui.tableWidget.hideColumn(8)
-        self.ui.tableWidget.hideColumn(9)
-        self.ui.tableWidget.hideColumn(10)
+        self.ui.tableWidget.cellDoubleClicked.connect(lambda row: self.open_complete_form(row))
+
+    def open_complete_form(self, row):
+        l = LK()
+        l.unpack_lk(db.load_lk(self.ui.tableWidget.item(row, 0).text()))
+        self.edit_complete = Complete(l)
+        self.edit_complete.show()
 
     def fill_table(self):
         """Заполняем таблицу долгами"""
@@ -86,11 +83,12 @@ class MainWindow(QtWidgets.QMainWindow):
             btn.clicked.connect(self.open_edit_form)
             ost = (datetime.strptime(listkontr.date_vypoln, '%d.%m.%Y') - datetime.today())
             self.ui.tableWidget.setItem(row, 0, QTableWidgetItem(str(listkontr.id_lk)))
-            self.ui.tableWidget.setCellWidget(row, 12, btn)
             self.ui.tableWidget.setItem(row, 1, QTableWidgetItem(str(listkontr.tlg)))
             self.ui.tableWidget.setItem(row, 2, QTableWidgetItem(str(listkontr.date_tlg)))
             self.ui.tableWidget.setItem(row, 3, QTableWidgetItem(str(listkontr.date_vypoln)))
-            self.ui.tableWidget.setItem(row, 11, QTableWidgetItem(str(ost.days + 1)))
+            self.ui.tableWidget.setItem(row, 4, QTableWidgetItem(str(listkontr.lk)))
+            self.ui.tableWidget.setItem(row, 5, QTableWidgetItem(str(ost.days + 1)))
+            self.ui.tableWidget.setCellWidget(row, 6, btn)
             row += 1
 
     def add_form(self):
@@ -259,6 +257,70 @@ class EditLK(AddLk):
     def delete_lk(self):
         db.delete_lk(self.lk)
         self.close()
+
+
+class Complete(QtWidgets.QWidget):
+    def __init__(self, lk):
+        super().__init__()
+        self.plane_complete = None
+        self.lk = lk
+        self.podrs = []
+        self.plane_btns = []
+        self.plane_groups = []
+        self.ui = Ui_CompleteForm()
+        self.ui.setupUi(self)
+        self.setWindowTitle(f"Лист контроля {str(self.lk.lk)}")
+        self.init_planes()
+
+    def init_planes(self):
+        for id_plane, id_podr in self.lk.planes.items():
+            p = Plane()
+            p.unpack_plane(db.load_plane(id_plane))
+            p.id_podr = id_podr
+            btn = QPushButton(text=str(p.bort_num))
+            btn.setFixedWidth(30)
+            btn.plane = p
+            btn.clicked.connect(self.open_plane_complete)
+            btn.setChecked(True)
+            self.plane_btns.append(btn)
+        all_podr = db.load_all_podr()
+        for p in all_podr:
+            row = 0
+            col = 0
+            groupbox = QGroupBox(p.name_podr)
+            layout_planes = QGridLayout()
+            groupbox.setLayout(layout_planes)
+            groupbox.podr = p
+            groupbox.plane_btns = []
+            self.ui.podr_layout.addWidget(groupbox)
+            self.plane_groups.append(groupbox)
+            for plane_btn in self.plane_btns:
+                if plane_btn.plane.id_podr == p.id_podr:
+                    if col < 3:
+                        layout_planes.addWidget(plane_btn, row, col)
+                        col += 1
+                    else:
+                        row += 1
+                        col = 0
+                        layout_planes.addWidget(plane_btn, row, col)
+                        col += 1
+
+    def open_plane_complete(self):
+        sender = self.sender()
+        self.plane_complete = EditComplete(sender.plane, self.lk)
+        self.plane_complete.show()
+
+
+class EditComplete(QtWidgets.QWidget):
+    def __init__(self, p, lk, parent=None):
+        super().__init__(parent)
+        self.lk = lk
+        self.plane = p
+        self.resize(200, 200)
+        self.setWindowTitle(f'Самолет {self.plane.bort_num}')
+        self.main_layout = QVBoxLayout()
+
+
 
 
 class SetupPodr(QtWidgets.QWidget):

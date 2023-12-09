@@ -108,7 +108,11 @@ class Database:
 
     @staticmethod
     def add_lk(data: LK):
-        query = QSqlQuery()
+
+        query_text = ("INSERT INTO lk ("
+                      "tlg, date_tlg, date_vypoln, opisanie, lk, "
+                      "komu_spec, komu_planes, complete, planes) VALUES(?, ?, ?, ?)")
+
         query.prepare("""INSERT into lk values (
                         null, :tlg, :date_tlg, :date_vypoln, :opisanie,
                         :lk, null, null, :komu_spec, :komu_planes, :complete, :planes)""")
