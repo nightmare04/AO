@@ -335,7 +335,7 @@ class Complete(QtWidgets.QWidget):
         self.plane_groups = []
         self.ui = Ui_CompleteForm()
         self.ui.setupUi(self)
-        self.setWindowTitle(f"Лист контроля {str(self.lk.lk)}")
+        self.setWindowTitle(f"Лист контроля №{str(self.lk.lk)}")
         self.init_planes()
 
     def init_planes(self):
@@ -381,9 +381,26 @@ class EditComplete(QtWidgets.QWidget):
         super().__init__(parent)
         self.lk = listk
         self.plane = pl
-        self.resize(200, 200)
-        self.setWindowTitle(f'Самолет {self.plane.bort_num}')
+        self.resize(250, 200)
+        self.setWindowTitle(f'Самолет №{self.plane.bort_num}')
         self.main_layout = QVBoxLayout()
+        self.setLayout(self.main_layout)
+        self.specs = db.load_all_spec()
+        for sp in self.specs:
+            btn = QPushButton(sp.name_spec)
+            btn.spec = sp
+            btn.setCheckable(True)
+            btn.lk = self.lk
+            btn.clicked.connect(self.handle_spec)
+            if btn.spec.id_spec in btn.lk.komu_spec:
+                self.main_layout.addWidget(btn)
+
+    def handle_spec(self):
+        sender = self.sender()
+        if sender.isChecked():
+            db.add_complete(self.lk, self.plane, sender.spec)
+        else:
+            db.del_complete(self.lk, self.plane, sender.spec)
 
 
 class SetupPodr(QtWidgets.QWidget):
