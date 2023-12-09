@@ -68,8 +68,9 @@
      <string>Настройки</string>
     </property>
     <addaction name="podr_setup_action"/>
+    <addaction name="types_setup_action"/>
+    <addaction name="plane_setup_action"/>
     <addaction name="spec_setup_action"/>
-    <addaction name="action_6"/>
    </widget>
    <addaction name="menu"/>
    <addaction name="menu_2"/>
@@ -102,9 +103,14 @@
     <string>Специальности</string>
    </property>
   </action>
-  <action name="action_6">
+  <action name="plane_setup_action">
    <property name="text">
     <string>Самолеты</string>
+   </property>
+  </action>
+  <action name="types_setup_action">
+   <property name="text">
+    <string>Типы самолетов</string>
    </property>
   </action>
  </widget>

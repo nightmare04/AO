@@ -15,6 +15,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.setupUi(self)
         self.add_lk_form = None
         self.edit_form = None
+        self.setup_window = None
         self.lks = []
         self.init_table()
         self.fill_table()
@@ -24,6 +25,7 @@ class MainWindow(QtWidgets.QMainWindow):
         db.create_connection()
         self.ui.podr_setup_action.triggered.connect(self.open_setup_podr)
         self.ui.spec_setup_action.triggered.connect(self.open_setup_spec)
+        self.ui.types_setup_action.triggered.connect(self.open_setup_type)
 
     def event(self, e):
         if e.type() == QtCore.QEvent.Type.WindowActivate:
@@ -34,13 +36,17 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setup_window = SetupPodr()
         self.setup_window.show()
 
+    def open_setup_type(self):
+        self.setup_window = SetupType()
+        self.setup_window.show()
+
     def open_setup_spec(self):
         self.setup_window = SetupSpec()
         self.setup_window.show()
 
     def init_table(self):
         """Описываем параметры таблицы долгов"""
-        self.ui.tableWidget.setColumnCount(len(LK().__dict__)+2)
+        self.ui.tableWidget.setColumnCount(len(LK().__dict__)+1)
         self.ui.tableWidget.setHorizontalHeaderLabels([
             "ID",
             "Телеграмма",
@@ -90,7 +96,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def open_edit_form(self):
         """Открытие формы редактирования листа контроля"""
         sender = self.sender()
-        self.edit_form = EditLK(sender.lk)
+        self.edit_form = EditLK(sender.lk.id_lk)
         self.edit_form.show()
 
 
@@ -190,14 +196,15 @@ class AddLk(QtWidgets.QWidget):
         """Добавляем лист контроля в базу данных"""
         data = LK()
         data.pack_lk(self)
-        db.add_lk_to_db(data)
+        db.add_lk(data)
         self.close()
 
 
 class EditLK(AddLk):
-    def __init__(self, listkontr):
+    def __init__(self, id_lk):
         super().__init__()
-        self.lk = listkontr
+        self.lk = LK()
+        self.lk.unpack_lk(db.load_lk(id_lk))
         self.setWindowTitle("Изменить")
         self.ui.add_btn.setText("Сохранить")
         self.ui.add_btn.clicked.disconnect()
@@ -206,7 +213,20 @@ class EditLK(AddLk):
         self.ui.cancel_btn.clicked.disconnect()
         self.ui.cancel_btn.clicked.connect(self.delete_lk)
         self.load_lk()
+        self.fill_planes()
+        self.update_planes()
 
+    def fill_planes(self):
+        for id_plane, id_podr in self.lk.planes.items():
+            plane = Plane()
+            plane.unpack_plane(db.load_plane(id_plane))
+            plane.id_podr = id_podr
+            btn = DragButton(text=str(plane.bort_num))
+            btn.setFixedWidth(30)
+            btn.setCheckable(True)
+            btn.plane = plane
+            btn.setChecked(True)
+            self.plane_btns.append(btn)
     def load_lk(self):
         """Подгружаем лист контроля"""
         self.ui.TlgLineEdit.setText(self.lk.tlg)
@@ -227,7 +247,7 @@ class EditLK(AddLk):
     def save_lk(self):
         data = LK()
         data.pack_lk(self)
-        db.update_lk_in_db(data)
+        db.update_lk(data)
         self.close()
 
     def delete_lk(self):
@@ -250,8 +270,14 @@ class SetupPodr(QtWidgets.QWidget):
         self.add_btn = QtWidgets.QPushButton('Добавить')
         self.add_btn.clicked.connect(self.open_add_podr)
         self.close_btn = QtWidgets.QPushButton('Закрыть')
+        self.close_btn.clicked.connect(self.close)
         self.btns_layout.addWidget(self.add_btn)
         self.btns_layout.addWidget(self.close_btn)
+
+    def event(self, e):
+        if e.type() == QtCore.QEvent.Type.WindowActivate:
+            self.fill_table()
+        return QtWidgets.QWidget.event(self, e)
 
     def init_table(self):
         self.table.setColumnCount(3)
@@ -277,13 +303,14 @@ class SetupPodr(QtWidgets.QWidget):
 
     def open_change_podr(self):
         sender = self.sender()
-        self.change_form = ChangePodr(sender.podr)
+        self.change_form = EditPodr(sender.podr)
         self.change_form.show()
 
 
 class AddPodr(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
+        self.podr = Podr()
         self.main_layout = QGridLayout()
         self.setLayout(self.main_layout)
         self.setWindowTitle(f'Добавить подразделение')
@@ -297,26 +324,33 @@ class AddPodr(QtWidgets.QWidget):
         self.main_layout.addWidget(self.add_btn, 1, 0, 1, 2)
 
     def add_podr(self):
-        pass
+        self.podr.pack_podr(self)
+        db.add_podr(self.podr)
+        self.close()
 
 
-class ChangePodr(AddPodr):
+class EditPodr(AddPodr):
     def __init__(self, podr):
         super().__init__()
+        self.podr = podr
         self.setWindowTitle('Изменить подразделение')
         self.add_btn.setText('Сохранить')
         self.label.setText('Введите новое имя:')
         self.name_edit.setText(podr.name_podr)
         self.add_btn.clicked.disconnect()
         self.add_btn.clicked.connect(self.save_podr)
-
-    def add_podr(self):
-        pass
+        self.del_btn = QPushButton("Удалить")
+        self.del_btn.clicked.connect(self.del_podr)
+        self.main_layout.addWidget(self.del_btn, 2, 0, 1, 2)
 
     def save_podr(self):
-        pass
+        self.podr.pack_podr(self)
+        db.update_podr(self.podr)
+        self.close()
 
-
+    def del_podr(self):
+        db.delete_podr(self.podr.id_podr)
+        self.close()
 class SetupSpec(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
@@ -332,8 +366,14 @@ class SetupSpec(QtWidgets.QWidget):
         self.add_btn = QtWidgets.QPushButton('Добавить')
         self.add_btn.clicked.connect(self.open_add_spec)
         self.close_btn = QtWidgets.QPushButton('Закрыть')
+        self.close_btn.clicked.connect(self.close)
         self.btns_layout.addWidget(self.add_btn)
         self.btns_layout.addWidget(self.close_btn)
+
+    def event(self, e):
+        if e.type() == QtCore.QEvent.Type.WindowActivate:
+            self.fill_table()
+        return QtWidgets.QWidget.event(self, e)
 
     def init_table(self):
         self.table.setColumnCount(3)
@@ -348,7 +388,7 @@ class SetupSpec(QtWidgets.QWidget):
             btn = QPushButton('Изменить')
             btn.clicked.connect(self.open_change_spec)
             btn.spec = spec
-            self.table.setItem(row, 1, QTableWidgetItem(spec.name_spec))
+            self.table.setItem(row, 1, QTableWidgetItem(str(spec.name_spec)))
             self.table.setCellWidget(row, 2, btn)
 
             row += 1
@@ -359,13 +399,14 @@ class SetupSpec(QtWidgets.QWidget):
 
     def open_change_spec(self):
         sender = self.sender()
-        self.change_form = ChangeSpec(sender.spec)
+        self.change_form = EditSpec(sender.spec)
         self.change_form.show()
 
 
 class AddSpec(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
+        self.spec = Spec()
         self.main_layout = QGridLayout()
         self.setLayout(self.main_layout)
         self.setWindowTitle(f'Добавить специальность')
@@ -379,24 +420,133 @@ class AddSpec(QtWidgets.QWidget):
         self.main_layout.addWidget(self.add_btn, 1, 0, 1, 2)
 
     def add_spec(self):
-        pass
+        spec = Spec()
+        spec.pack_spec(self)
+        db.add_spec(spec)
+        self.close()
 
 
-class ChangeSpec(AddSpec):
+class EditSpec(AddSpec):
     def __init__(self, spec):
         super().__init__()
         self.setWindowTitle('Изменить специальность')
         self.add_btn.setText('Сохранить')
+        self.spec = spec
         self.label.setText('Введите новое имя:')
-        self.name_edit.setText(spec.name_spec)
+        self.name_edit.setText(str(spec.name_spec))
         self.add_btn.clicked.disconnect()
         self.add_btn.clicked.connect(self.save_spec)
-
-    def add_spec(self):
-        pass
+        self.del_btn = QPushButton("Удалить")
+        self.del_btn.clicked.connect(self.del_spec)
+        self.main_layout.addWidget(self.del_btn, 2, 0, 1, 2)
 
     def save_spec(self):
-        pass
+        spec = Spec()
+        spec.pack_spec(self)
+        db.update_spec(spec)
+        self.close()
+
+    def del_spec(self):
+        db.delete_spec(self.spec.id_spec)
+        self.close()
+
+
+class SetupType(QtWidgets.QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Типы самолетов")
+        self.main_layout = QtWidgets.QVBoxLayout()
+        self.setLayout(self.main_layout)
+        self.table = QtWidgets.QTableWidget()
+        self.init_table()
+        self.fill_table()
+        self.main_layout.addWidget(self.table)
+        self.btns_layout = QtWidgets.QHBoxLayout()
+        self.main_layout.addLayout(self.btns_layout)
+        self.add_btn = QtWidgets.QPushButton('Добавить')
+        self.add_btn.clicked.connect(self.open_add_type)
+        self.close_btn = QtWidgets.QPushButton('Закрыть')
+        self.close_btn.clicked.connect(self.close)
+        self.btns_layout.addWidget(self.add_btn)
+        self.btns_layout.addWidget(self.close_btn)
+
+    def event(self, e):
+        if e.type() == QtCore.QEvent.Type.WindowActivate:
+            self.fill_table()
+        return QtWidgets.QWidget.event(self, e)
+
+    def init_table(self):
+        self.table.setColumnCount(3)
+        self.table.setHorizontalHeaderLabels(('id', 'Название', ''))
+        self.table.hideColumn(0)
+
+    def fill_table(self):
+        types = db.load_all_type()
+        self.table.setRowCount(len(types))
+        row = 0
+        for type in types:
+            btn = QPushButton('Изменить')
+            btn.clicked.connect(self.open_change_type)
+            btn.type = type
+            self.table.setItem(row, 1, QTableWidgetItem(str(type.name_type)))
+            self.table.setCellWidget(row, 2, btn)
+
+            row += 1
+
+    def open_add_type(self):
+        self.add_form = AddType()
+        self.add_form.show()
+
+    def open_change_type(self):
+        sender = self.sender()
+        self.change_form = EditType(sender.type)
+        self.change_form.show()
+
+
+class AddType(QtWidgets.QWidget):
+    def __init__(self):
+        super().__init__()
+        self.type = Type()
+        self.main_layout = QGridLayout()
+        self.setLayout(self.main_layout)
+        self.setWindowTitle(f'Добавить тип самолета')
+        self.resize(300, 100)
+        self.label = QLabel('Введите имя:')
+        self.name_edit = QLineEdit()
+        self.main_layout.addWidget(self.label, 0, 0)
+        self.main_layout.addWidget(self.name_edit, 0, 1)
+        self.add_btn = QPushButton('Добавить')
+        self.add_btn.clicked.connect(self.add_type)
+        self.main_layout.addWidget(self.add_btn, 1, 0, 1, 2)
+
+    def add_type(self):
+        self.type.pack_type(self)
+        db.add_type(self.type)
+        self.close()
+
+
+class EditType(AddType):
+    def __init__(self, type):
+        super().__init__()
+        self.setWindowTitle('Изменить тип самолета')
+        self.add_btn.setText('Сохранить')
+        self.type = type
+        self.label.setText('Введите новое имя:')
+        self.name_edit.setText(str(self.type.name_type))
+        self.add_btn.clicked.disconnect()
+        self.add_btn.clicked.connect(self.save_type)
+        self.del_btn = QPushButton("Удалить")
+        self.del_btn.clicked.connect(self.del_type)
+        self.main_layout.addWidget(self.del_btn, 2, 0, 1, 2)
+
+    def save_type(self):
+        self.type.pack_type(self)
+        db.update_type(self.type)
+        self.close()
+
+    def del_type(self):
+        db.delete_type(self.type.id_type)
+        self.close()
 
 
 def except_hook(cls, exception, traceback):

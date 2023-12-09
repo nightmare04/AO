@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from PyQt6.QtSql import QSqlRecord
-
+from main import AddSpec
 
 @dataclass
 class Spec:
@@ -10,4 +10,9 @@ class Spec:
     def unpack_spec(self, record: QSqlRecord):
         self.id_spec = record.value('id_spec')
         self.name_spec = record.value('name_spec')
+        return self
+
+    def pack_spec(self, form: AddSpec):
+        self.id_spec = form.spec.id_spec
+        self.name_spec = form.name_edit.text()
         return self

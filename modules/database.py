@@ -1,9 +1,12 @@
+import json
+
 from PyQt6.QtSql import QSqlDatabase, QSqlQuery
 from PyQt6.QtWidgets import QMessageBox
 
 from modules.spec import *
 from modules.podr import *
 from modules.plane import *
+from modules.type import *
 from modules.lk import *
 
 
@@ -27,7 +30,7 @@ class Database:
         return True
 
     @staticmethod
-    def execute_query_with_params(sql_query, query_values=None):
+    def query_wp(sql_query, query_values=None):
         query = QSqlQuery()
         query.prepare(sql_query)
         if query_values is not None:
@@ -39,17 +42,8 @@ class Database:
 
     def load_all(self, table) -> QSqlQuery:
         query_text = f"SELECT * FROM {table}"
-        query = self.execute_query_with_params(query_text)
+        query = self.query_wp(query_text)
         return query
-
-    def load_all_planes(self) -> list:
-        result = []
-        query = self.load_all('planes')
-        while query.next():
-            plane = Plane()
-            plane.unpack_plane(query.record())
-            result.append(plane)
-        return result
 
     def load_all_lk(self) -> list:
         result = []
@@ -69,6 +63,15 @@ class Database:
             result.append(podr)
         return result
 
+    def load_all_planes(self) -> list:
+        result = []
+        query = self.load_all('planes')
+        while query.next():
+            plane = Plane()
+            plane.unpack_plane(query.record())
+            result.append(plane)
+        return result
+
     def load_all_spec(self) -> list:
         result = []
         query = self.load_all('spec')
@@ -78,21 +81,24 @@ class Database:
             result.append(spec)
         return result
 
-    def load_planes_by_podr(self, id_podr) -> list:
-        result = []
-        query = self.execute_query_with_params(f"SELECT * FROM planes WHERE id_podr={id_podr}")
-        while query.next():
-            plane = Plane()
-            plane.unpack_plane(query.record())
-            result.append(plane)
-        return result
+    def load_plane(self, id_plane):
+        query = self.query_wp(f"SELECT * FROM planes WHERE id_plane={id_plane}")
+        query.next()
+        return query.record()
+
+    def load_lk(self, id_lk):
+        query_text = f"SELECT * FROM lk WHERE id_lk={id_lk}"
+        query = self.query_wp(query_text)
+        query.next()
+
+        return query.record()
 
     @staticmethod
-    def add_lk_to_db(data: LK):
+    def add_lk(data: LK):
         query = QSqlQuery()
         query.prepare("""INSERT into lk values (
                         null, :tlg, :date_tlg, :date_vypoln, :opisanie,
-                        :lk, null, null, :komu_spec, :komu_planes, :complete)""")
+                        :lk, null, null, :komu_spec, :komu_planes, :complete, :planes)""")
         query.bindValue(':tlg', data.tlg)
         query.bindValue(':date_tlg', data.date_tlg)
         query.bindValue(':date_vypoln', data.date_vypoln)
@@ -101,10 +107,11 @@ class Database:
         query.bindValue(':komu_spec', json.dumps(data.komu_spec))
         query.bindValue(':komu_planes', json.dumps(data.komu_planes))
         query.bindValue(':complete', 0)
+        query.bindValue(':planes', json.dumps(data.planes))
         query.exec()
 
     @staticmethod
-    def update_lk_in_db(lk: LK):
+    def update_lk(lk: LK):
         query = QSqlQuery()
         query_text = (f"UPDATE lk SET "
                       f"tlg='{lk.tlg}', "
@@ -116,11 +123,64 @@ class Database:
                       f"komu_planes='{lk.komu_planes}', "
                       f"complete='{lk.complete}', "
                       f"otvet='{lk.otvet}', "
-                      f"date_otvet='{lk.date_otvet}' "
+                      f"date_otvet='{lk.date_otvet}', "
+                      f"planes='{json.dumps(lk.planes)}' "
                       f"WHERE id_lk={lk.id_lk}")
         query.exec(query_text)
 
     @staticmethod
     def delete_lk(lk: LK):
         query = QSqlQuery()
-        query.exec(f"DELETE from lk WHERE id_lk={lk.id_lk}")
+        query.exec(f"DELETE FROM lk WHERE id_lk={lk.id_lk}")
+
+    def load_planes_by_podr(self, id_podr) -> list:
+        result = []
+        query = self.query_wp(f"SELECT * FROM planes WHERE id_podr={id_podr}")
+        while query.next():
+            plane = Plane()
+            plane.unpack_plane(query.record())
+            result.append(plane)
+        return result
+
+    def load_all_type(self) -> list:
+        result = []
+        query = self.load_all('planes_type')
+        while query.next():
+            type = Type()
+            type.unpack_type(query.record())
+            result.append(type)
+        return result
+
+    @staticmethod
+    def add_spec(spec):
+        query = QSqlQuery()
+        query.exec(f"INSERT INTO spec VALUES(null, '{spec.name_spec}')")
+
+    def update_spec(self, spec):
+        self.query_wp("UPDATE spec SET name_spec=? WHERE id_spec=?", [spec.name_spec, spec.id_spec])
+
+    def delete_spec(self, id_spec):
+        self.query_wp("DELETE FROM spec WHERE id_spec=?", [id_spec])
+
+    @staticmethod
+    def add_podr(podr):
+        query = QSqlQuery()
+        query.exec(f"INSERT INTO podr VALUES(null, '{podr.name_podr}')")
+
+    def update_podr(self, podr):
+        self.query_wp("UPDATE podr SET name_podr=? WHERE id_podr=?", [podr.name_podr, podr.id_podr])
+
+    def delete_podr(self, id_podr):
+        self.query_wp("DELETE FROM podr WHERE id_podr=?", [id_podr])
+
+    @staticmethod
+    def add_type(type):
+        query = QSqlQuery()
+        query.exec(f"INSERT INTO planes_type VALUES(null, '{type.name_type}')")
+        return
+
+    def update_type(self, type):
+        self.query_wp("UPDATE planes_type SET name_type=? WHERE id_type=?", [type.name_type, type.id_type])
+
+    def delete_type(self, id_type):
+        self.query_wp("DELETE FROM planes_type WHERE id_type=?", [id_type])
