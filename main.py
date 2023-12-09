@@ -119,30 +119,30 @@ class AddLk(QtWidgets.QWidget):
         self.setAcceptDrops(True)
 
     def fill_planes(self):
-        for plane in db.load_all_planes():
-            btn = DragButton(text=str(plane.bort_num))
+        for p in db.load_all_planes():
+            btn = DragButton(text=str(p.bort_num))
             btn.setFixedWidth(30)
             btn.setCheckable(True)
-            btn.plane = plane
+            btn.plane = p
             btn.setChecked(True)
             self.plane_btns.append(btn)
 
     def init_planes(self):
         all_podr = db.load_all_podr()
-        for podr in all_podr:
+        for p in all_podr:
             row = 0
             col = 0
-            groupbox = DragGroupbox(podr.name_podr)
+            groupbox = DragGroupbox(p.name_podr)
             layout_planes = QGridLayout()
             groupbox.setLayout(layout_planes)
             groupbox.setCheckable(True)
-            groupbox.podr = podr
+            groupbox.podr = p
             groupbox.plane_btns = []
             groupbox.toggled.connect(self.check_toggle)
             self.ui.planesLayout.addWidget(groupbox)
             self.plane_groups.append(groupbox)
             for plane_btn in self.plane_btns:
-                if plane_btn.plane.id_podr == podr.id_podr:
+                if plane_btn.plane.id_podr == p.id_podr:
                     if col < 3:
                         layout_planes.addWidget(plane_btn, row, col)
                         col += 1
@@ -218,20 +218,21 @@ class EditLK(AddLk):
 
     def fill_planes(self):
         for id_plane, id_podr in self.lk.planes.items():
-            plane = Plane()
-            plane.unpack_plane(db.load_plane(id_plane))
-            plane.id_podr = id_podr
-            btn = DragButton(text=str(plane.bort_num))
+            p = Plane()
+            p.unpack_plane(db.load_plane(id_plane))
+            p.id_podr = id_podr
+            btn = DragButton(text=str(p.bort_num))
             btn.setFixedWidth(30)
             btn.setCheckable(True)
-            btn.plane = plane
+            btn.plane = p
             btn.setChecked(True)
             self.plane_btns.append(btn)
+
     def load_lk(self):
         """Подгружаем лист контроля"""
         self.ui.TlgLineEdit.setText(self.lk.tlg)
-        self.ui.TlgDateEdit.setDate(datetime.strptime(self.lk.date_tlg, '%d.%m.%Y'))
-        self.ui.SrokDateEdit.setDate(datetime.strptime(self.lk.date_vypoln, '%d.%m.%Y'))
+        self.ui.TlgDateEdit.setDate(datetime.strptime(str(self.lk.date_tlg), '%d.%m.%Y'))
+        self.ui.SrokDateEdit.setDate(datetime.strptime(str(self.lk.date_vypoln), '%d.%m.%Y'))
         self.ui.textEdit.setText(self.lk.opisanie)
         self.ui.LkLineEdit.setText(self.lk.lk)
         for plane_btn in self.plane_btns:
@@ -258,6 +259,8 @@ class EditLK(AddLk):
 class SetupPodr(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
+        self.add_form = None
+        self.change_form = None
         self.setWindowTitle("Подразделения")
         self.main_layout = QtWidgets.QVBoxLayout()
         self.setLayout(self.main_layout)
@@ -288,11 +291,11 @@ class SetupPodr(QtWidgets.QWidget):
         podrs = db.load_all_podr()
         self.table.setRowCount(len(podrs))
         row = 0
-        for podr in podrs:
+        for p in podrs:
             btn = QPushButton('Изменить')
             btn.clicked.connect(self.open_change_podr)
-            btn.podr = podr
-            self.table.setItem(row, 1, QTableWidgetItem(podr.name_podr))
+            btn.podr = p
+            self.table.setItem(row, 1, QTableWidgetItem(p.name_podr))
             self.table.setCellWidget(row, 2, btn)
 
             row += 1
@@ -330,13 +333,13 @@ class AddPodr(QtWidgets.QWidget):
 
 
 class EditPodr(AddPodr):
-    def __init__(self, podr):
+    def __init__(self, p):
         super().__init__()
-        self.podr = podr
+        self.podr = p
         self.setWindowTitle('Изменить подразделение')
         self.add_btn.setText('Сохранить')
         self.label.setText('Введите новое имя:')
-        self.name_edit.setText(podr.name_podr)
+        self.name_edit.setText(p.name_podr)
         self.add_btn.clicked.disconnect()
         self.add_btn.clicked.connect(self.save_podr)
         self.del_btn = QPushButton("Удалить")
@@ -351,9 +354,13 @@ class EditPodr(AddPodr):
     def del_podr(self):
         db.delete_podr(self.podr.id_podr)
         self.close()
+
+
 class SetupSpec(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
+        self.add_form = None
+        self.change_form = None
         self.setWindowTitle("Специальности")
         self.main_layout = QtWidgets.QVBoxLayout()
         self.setLayout(self.main_layout)
@@ -384,11 +391,11 @@ class SetupSpec(QtWidgets.QWidget):
         specs = db.load_all_spec()
         self.table.setRowCount(len(specs))
         row = 0
-        for spec in specs:
+        for s in specs:
             btn = QPushButton('Изменить')
             btn.clicked.connect(self.open_change_spec)
-            btn.spec = spec
-            self.table.setItem(row, 1, QTableWidgetItem(str(spec.name_spec)))
+            btn.spec = s
+            self.table.setItem(row, 1, QTableWidgetItem(str(s.name_spec)))
             self.table.setCellWidget(row, 2, btn)
 
             row += 1
@@ -420,20 +427,19 @@ class AddSpec(QtWidgets.QWidget):
         self.main_layout.addWidget(self.add_btn, 1, 0, 1, 2)
 
     def add_spec(self):
-        spec = Spec()
-        spec.pack_spec(self)
-        db.add_spec(spec)
+        self.spec.pack_spec(self)
+        db.add_spec(self.spec)
         self.close()
 
 
 class EditSpec(AddSpec):
-    def __init__(self, spec):
+    def __init__(self, s):
         super().__init__()
         self.setWindowTitle('Изменить специальность')
         self.add_btn.setText('Сохранить')
-        self.spec = spec
+        self.spec = s
         self.label.setText('Введите новое имя:')
-        self.name_edit.setText(str(spec.name_spec))
+        self.name_edit.setText(str(s.name_spec))
         self.add_btn.clicked.disconnect()
         self.add_btn.clicked.connect(self.save_spec)
         self.del_btn = QPushButton("Удалить")
@@ -441,9 +447,8 @@ class EditSpec(AddSpec):
         self.main_layout.addWidget(self.del_btn, 2, 0, 1, 2)
 
     def save_spec(self):
-        spec = Spec()
-        spec.pack_spec(self)
-        db.update_spec(spec)
+        self.spec.pack_spec(self)
+        db.update_spec(self.spec)
         self.close()
 
     def del_spec(self):
@@ -454,6 +459,8 @@ class EditSpec(AddSpec):
 class SetupType(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
+        self.add_form = None
+        self.change_form = None
         self.setWindowTitle("Типы самолетов")
         self.main_layout = QtWidgets.QVBoxLayout()
         self.setLayout(self.main_layout)
@@ -484,11 +491,11 @@ class SetupType(QtWidgets.QWidget):
         types = db.load_all_type()
         self.table.setRowCount(len(types))
         row = 0
-        for type in types:
+        for t in types:
             btn = QPushButton('Изменить')
             btn.clicked.connect(self.open_change_type)
-            btn.type = type
-            self.table.setItem(row, 1, QTableWidgetItem(str(type.name_type)))
+            btn.type = t
+            self.table.setItem(row, 1, QTableWidgetItem(str(t.name_type)))
             self.table.setCellWidget(row, 2, btn)
 
             row += 1
@@ -526,11 +533,11 @@ class AddType(QtWidgets.QWidget):
 
 
 class EditType(AddType):
-    def __init__(self, type):
+    def __init__(self, t):
         super().__init__()
         self.setWindowTitle('Изменить тип самолета')
         self.add_btn.setText('Сохранить')
-        self.type = type
+        self.type = t
         self.label.setText('Введите новое имя:')
         self.name_edit.setText(str(self.type.name_type))
         self.add_btn.clicked.disconnect()
