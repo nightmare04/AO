@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from PyQt6.QtSql import QSqlRecord
 from main import AddSpec
 
+
 @dataclass
 class Spec:
     id_spec: str = ''

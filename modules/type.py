@@ -9,7 +9,7 @@ class Type:
     id_type: str = ''
     name_type: str = ''
 
-    def unpack_type(self, record:QSqlRecord):
+    def unpack_type(self, record: QSqlRecord):
         self.id_type = str(record.value('id_type'))
         self.name_type = str(record.value('name_type'))
         return self

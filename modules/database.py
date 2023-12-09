@@ -126,7 +126,7 @@ class Database:
             lk.komu_planes, lk.complete, lk.otvet,
             lk.date_otvet, lk.planes, lk.id_lk]
 
-        query = self.query_wp(query_text, query_values)
+        self.query_wp(query_text, query_values)
 
     def delete_lk(self, lk: LK):
         self.query_wp("DELETE FROM lk WHERE id_lk=?",
@@ -163,16 +163,16 @@ class Database:
     def delete_podr(self, id_podr):
         self.query_wp("DELETE FROM podr WHERE id_podr=?", [id_podr])
 
-    def add_type(self, type):
-        self.query_wp("INSERT INTO planes_type (name_type) VALUES(?)", [type.name_type])
+    def add_type(self, t):
+        self.query_wp("INSERT INTO planes_type (name_type) VALUES(?)", [t.name_type])
 
     def load_type_by_id(self, id_type) -> Type:
         query = self.query_wp(f"SELECT * FROM plane_types WHERE id_type={id_type}")
         query.first()
         return Type().unpack_type(query.record())
 
-    def update_type(self, type):
-        self.query_wp("UPDATE planes_type SET name_type=? WHERE id_type=?", [type.name_type, type.id_type])
+    def update_type(self, t):
+        self.query_wp("UPDATE planes_type SET name_type=? WHERE id_type=?", [t.name_type, t.id_type])
 
     def delete_type(self, id_type):
         self.query_wp("DELETE FROM planes_type WHERE id_type=?", [id_type])
