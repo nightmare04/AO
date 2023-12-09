@@ -135,9 +135,10 @@ class AddLk(QtWidgets.QWidget):
 
         row = 0
         col = 0
-        for tp in podrs:
+        for pd in podrs:
             btn = QPushButton(tp.name_podr)
-            btn.podr = tp
+            btn.clicked.connect(self.select_by_podr)
+            btn.podr = pd
             if col < 4:
                 podr_groupbox_layout.addWidget(btn, row, col)
                 col += 1
@@ -157,6 +158,7 @@ class AddLk(QtWidgets.QWidget):
         col = 0
         for tp in types:
             btn = QPushButton(tp.name_type)
+            btn.clicked.connect(self.select_by_type)
             btn.type = tp
             if col < 4:
                 type_groupbox_layout.addWidget(btn, row, col)
@@ -167,7 +169,15 @@ class AddLk(QtWidgets.QWidget):
                 type_groupbox_layout.addWidget(btn, row, col)
                 col += 1
 
+    def select_by_podr(self):
+        sender = self.sender()
+        btns = self.findChildren(DragButton)
+        for btn in btns:
+            if btn.plane.id_podr == sen
 
+
+    def select_by_type(self):
+        pass
 
 
 
