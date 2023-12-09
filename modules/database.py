@@ -158,7 +158,7 @@ class Database:
 
 
     def add_spec(self, spec):
-        self.query_wp(f"INSERT INTO spec name_spec=?",
+        self.query_wp(f"INSERT INTO spec (name_spec) VALUES(?)",
                       [spec.name_spec])
 
     def update_spec(self, spec):
@@ -170,9 +170,8 @@ class Database:
                       [id_spec])
 
     def add_podr(self, podr):
-
-        self.query_wp("INSERT INTO podr name_podr=?",
-                      [podr.name_podr])
+        self.query_wp("INSERT INTO podr (name_podr) VALUES(?)", [podr.name_podr])
+        return
 
     def update_podr(self, podr):
         self.query_wp(
@@ -182,11 +181,13 @@ class Database:
     def delete_podr(self, id_podr):
         self.query_wp("DELETE FROM podr WHERE id_podr=?", [id_podr])
 
-    @staticmethod
-    def add_type(type):
-        query = QSqlQuery()
-        query.exec(f"INSERT INTO planes_type VALUES(null, '{type.name_type}')")
-        return
+    def add_type(self, type):
+        self.query_wp("INSERT INTO planes_type (name_type) VALUES(?)", [type.name_type])
+
+    def load_type_by_id(self, id_type) -> str:
+        query = self.query_wp(f"SELECT name_type FROM plane_types WHERE id_type={id_type}")
+        query.first()
+        return query.value(0)
 
     def update_type(self, type):
         self.query_wp("UPDATE planes_type SET name_type=? WHERE id_type=?", [type.name_type, type.id_type])

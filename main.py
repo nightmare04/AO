@@ -321,8 +321,6 @@ class EditComplete(QtWidgets.QWidget):
         self.main_layout = QVBoxLayout()
 
 
-
-
 class SetupPodr(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
@@ -661,7 +659,7 @@ class SetupPlane(QtWidgets.QWidget):
         for p in planes:
             btn = QPushButton('Изменить')
             btn.clicked.connect(self.open_change_plane)
-            btn.plane = p
+            btn.plane = Plane().unpack_plane(p)
             self.table.setItem(row, 0, QTableWidgetItem(str(p.value(1))))
             self.table.setItem(row, 1, QTableWidgetItem(str(p.value(2))))
             self.table.setItem(row, 2, QTableWidgetItem(str(p.value(3))))
@@ -739,25 +737,32 @@ class AddPlane(QtWidgets.QWidget):
 
 
 class EditPlane(AddPlane):
-    def __init__(self, t):
+    def __init__(self, p):
         super().__init__()
-        self.setWindowTitle('Изменить тип самолета')
-        self.add_btn.setText('Сохранить')
-        self.type = t
-        self.label.setText('Введите новое имя:')
-        self.name_edit.setText(str(self.type.name_type))
-        self.add_btn.clicked.disconnect()
-        self.add_btn.clicked.connect(self.save_type)
-        self.del_btn = QPushButton("Удалить")
-        self.del_btn.clicked.connect(self.del_type)
-        self.main_layout.addWidget(self.del_btn, 2, 0, 1, 2)
+        self.plane = p
+        self.setWindowTitle('Изменить самолет')
 
-    def save_type(self):
-        self.type.pack_type(self)
-        db.update_type(self.type)
+        self.add_btn.setText('Сохранить')
+        self.add_btn.clicked.disconnect()
+        self.add_btn.clicked.connect(self.save_plane)
+
+        self.del_btn = QPushButton('Удалить')
+        self.del_btn.clicked.connect(self.del_plane)
+        self.main_layout.addWidget(self.del_btn, 5, 0, 1, 2)
+
+        self.fill_plane()
+
+    def fill_plane(self):
+        self.bort_num_edit.setText(str(self.plane.bort_num))
+        self.zav_num_edit.setText(str(self.plane.zav_num))
+        # self.type_select.setCurrentIndex(self.type_select.findText(db.load_type_by_id(self.plane.id_type)))
+
+    def save_plane(self):
+        self.plane.pack_plane(self)
+        db.update_plane(self.type)
         self.close()
 
-    def del_type(self):
+    def del_plane(self):
         db.delete_type(self.type.id_type)
         self.close()
 
