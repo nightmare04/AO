@@ -67,9 +67,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.tableWidget.cellDoubleClicked.connect(lambda row: self.open_complete_form(row))
 
     def open_complete_form(self, row):
-        l = LK()
-        l.unpack_lk(db.load_lk(self.ui.tableWidget.item(row, 0).text()))
-        self.edit_complete = Complete(l)
+        lk = db.load_lk(self.ui.tableWidget.item(row, 0).text())
+        self.edit_complete = Complete(lk)
         self.edit_complete.show()
 
     def fill_table(self):
@@ -77,16 +76,16 @@ class MainWindow(QtWidgets.QMainWindow):
         self.lks = db.load_all_lk()
         self.ui.tableWidget.setRowCount(len(self.lks))
         row = 0
-        for listkontr in self.lks:
+        for lk in self.lks:
             btn = QPushButton("Изменить")
-            btn.lk = listkontr
+            btn.lk = lk
             btn.clicked.connect(self.open_edit_form)
-            ost = (datetime.strptime(listkontr.date_vypoln, '%d.%m.%Y') - datetime.today())
-            self.ui.tableWidget.setItem(row, 0, QTableWidgetItem(str(listkontr.id_lk)))
-            self.ui.tableWidget.setItem(row, 1, QTableWidgetItem(str(listkontr.tlg)))
-            self.ui.tableWidget.setItem(row, 2, QTableWidgetItem(str(listkontr.date_tlg)))
-            self.ui.tableWidget.setItem(row, 3, QTableWidgetItem(str(listkontr.date_vypoln)))
-            self.ui.tableWidget.setItem(row, 4, QTableWidgetItem(str(listkontr.lk)))
+            ost = (datetime.strptime(lk.date_vypoln, '%d.%m.%Y') - datetime.today())
+            self.ui.tableWidget.setItem(row, 0, QTableWidgetItem(str(lk.id_lk)))
+            self.ui.tableWidget.setItem(row, 1, QTableWidgetItem(str(lk.tlg)))
+            self.ui.tableWidget.setItem(row, 2, QTableWidgetItem(str(lk.date_tlg)))
+            self.ui.tableWidget.setItem(row, 3, QTableWidgetItem(str(lk.date_vypoln)))
+            self.ui.tableWidget.setItem(row, 4, QTableWidgetItem(str(lk.lk)))
             self.ui.tableWidget.setItem(row, 5, QTableWidgetItem(str(ost.days + 1)))
             self.ui.tableWidget.setCellWidget(row, 6, btn)
             row += 1
@@ -99,7 +98,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def open_edit_form(self):
         """Открытие формы редактирования листа контроля"""
         sender = self.sender()
-        self.edit_form = EditLK(sender.lk.id_lk)
+        self.edit_form = EditLK(sender.lk)
         self.edit_form.show()
 
 
@@ -204,10 +203,9 @@ class AddLk(QtWidgets.QWidget):
 
 
 class EditLK(AddLk):
-    def __init__(self, id_lk):
+    def __init__(self, lk):
         super().__init__()
-        self.lk = LK()
-        self.lk.unpack_lk(db.load_lk(id_lk))
+        self.lk = lk
         self.setWindowTitle("Изменить")
         self.ui.add_btn.setText("Сохранить")
         self.ui.add_btn.clicked.disconnect()
@@ -221,8 +219,7 @@ class EditLK(AddLk):
 
     def fill_planes(self):
         for id_plane, id_podr in self.lk.planes.items():
-            p = Plane()
-            p.unpack_plane(db.load_plane(id_plane))
+            p = db.load_plane(id_plane)
             p.id_podr = id_podr
             btn = DragButton(text=str(p.bort_num))
             btn.setFixedWidth(30)
@@ -274,12 +271,11 @@ class Complete(QtWidgets.QWidget):
 
     def init_planes(self):
         for id_plane, id_podr in self.lk.planes.items():
-            p = Plane()
-            p.unpack_plane(db.load_plane(id_plane))
-            p.id_podr = id_podr
-            btn = QPushButton(text=str(p.bort_num))
+            plane = db.load_plane(id_plane)
+            plane.id_podr = id_podr
+            btn = QPushButton(text=str(plane.bort_num))
             btn.setFixedWidth(30)
-            btn.plane = p
+            btn.plane = plane
             btn.clicked.connect(self.open_plane_complete)
             btn.setChecked(True)
             self.plane_btns.append(btn)
@@ -659,7 +655,7 @@ class SetupPlane(QtWidgets.QWidget):
         for p in planes:
             btn = QPushButton('Изменить')
             btn.clicked.connect(self.open_change_plane)
-            btn.plane = Plane().unpack_plane(p)
+            btn.plane = p
             self.table.setItem(row, 0, QTableWidgetItem(str(p.value(1))))
             self.table.setItem(row, 1, QTableWidgetItem(str(p.value(2))))
             self.table.setItem(row, 2, QTableWidgetItem(str(p.value(3))))

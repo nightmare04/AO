@@ -8,8 +8,8 @@ class Spec:
     name_spec: str = ''
 
     def unpack_spec(self, record: QSqlRecord):
-        self.id_spec = record.value('id_spec')
-        self.name_spec = record.value('name_spec')
+        self.id_spec = str(record.value('id_spec'))
+        self.name_spec = str(record.value('name_spec'))
         return self
 
     def pack_spec(self, form: AddSpec):

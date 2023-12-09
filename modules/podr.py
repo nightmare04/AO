@@ -9,8 +9,8 @@ class Podr:
     name_podr: str = ''
 
     def unpack_podr(self, record:QSqlRecord):
-        self.id_podr = record.value('id_podr')
-        self.name_podr = record.value('name_podr')
+        self.id_podr = str(record.value('id_podr'))
+        self.name_podr = str(record.value('name_podr'))
         return self
 
     def pack_podr(self, form: AddPodr):

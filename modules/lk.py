@@ -22,13 +22,13 @@ class LK:
     planes: dict = field(default_factory=dict)
 
     def unpack_lk(self, record: QSqlRecord):
-        self.id_lk = record.value('id_lk')
-        self.tlg = record.value('tlg')
+        self.id_lk = str(record.value('id_lk'))
+        self.tlg = str(record.value('tlg'))
         self.date_tlg = record.value('date_tlg')
         self.date_vypoln = record.value('date_vypoln')
-        self.opisanie = record.value('opisanie')
-        self.lk = record.value('lk')
-        self.otvet = record.value('otvet')
+        self.opisanie = str(record.value('opisanie'))
+        self.lk = str(record.value('lk'))
+        self.otvet = str(record.value('otvet'))
         self.date_otvet = record.value('date_otvet')
         self.komu_planes = json.loads(record.value('komu_planes'))
         self.komu_spec = json.loads(record.value('komu_spec'))

@@ -10,11 +10,11 @@ class Plane:
     zav_num: str = ''
 
     def unpack_plane(self, record:QSqlRecord):
-        self.id_plane = record.value('id_plane')
-        self.id_podr = record.value('id_podr')
-        self.id_type = record.value('id_type')
-        self.zav_num = record.value('zav_num')
-        self.bort_num = record.value('bort_num')
+        self.id_plane = str(record.value('id_plane'))
+        self.id_podr = str(record.value('id_podr'))
+        self.id_type = str(record.value('id_type'))
+        self.zav_num = str(record.value('zav_num'))
+        self.bort_num = str(record.value('bort_num'))
         return self
 
     def pack_plane(self, form: AddPlane):

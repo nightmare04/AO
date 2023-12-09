@@ -10,8 +10,8 @@ class Type:
     name_type: str = ''
 
     def unpack_type(self, record:QSqlRecord):
-        self.id_type = record.value('id_type')
-        self.name_type = record.value('name_type')
+        self.id_type = str(record.value('id_type'))
+        self.name_type = str(record.value('name_type'))
         return self
 
     def pack_type(self, form):
