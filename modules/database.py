@@ -49,8 +49,7 @@ class Database:
         result = []
         query = self.load_all('lk')
         while query.next():
-            lk = LK()
-            lk.unpack_lk(query.record())
+            lk = LK().unpack_lk(query.record())
             result.append(lk)
         return result
 
@@ -58,8 +57,7 @@ class Database:
         result = []
         query = self.load_all('podr')
         while query.next():
-            podr = Podr()
-            podr.unpack_podr(query.record())
+            podr = Podr().unpack_podr(query.record())
             result.append(podr)
         return result
 
@@ -89,22 +87,20 @@ class Database:
         result = []
         query = self.load_all('spec')
         while query.next():
-            spec = Spec()
-            spec.unpack_spec(query.record())
+            spec = Spec().unpack_spec(query.record())
             result.append(spec)
         return result
 
-    def load_plane(self, id_plane):
+    def load_plane(self, id_plane) -> Plane:
         query = self.query_wp("SELECT * FROM planes WHERE id_plane=?", [id_plane])
         query.next()
-        return query.record()
+        return Plane().unpack_plane(query.record())
 
-    def load_lk(self, id_lk):
+    def load_lk(self, id_lk) -> LK:
         query_text = f"SELECT * FROM lk WHERE id_lk={id_lk}"
         query = self.query_wp(query_text)
-        query.next()
-
-        return query.record()
+        query.first()
+        return LK().unpack_lk(query.record())
 
     def add_lk(self, data: LK):
         query_text = ("INSERT INTO lk ("
@@ -132,30 +128,16 @@ class Database:
 
         query = self.query_wp(query_text, query_values)
 
-
     def delete_lk(self, lk: LK):
         self.query_wp("DELETE FROM lk WHERE id_lk=?",
                       [lk.id_lk])
-
-    def load_planes_by_podr(self, id_podr) -> list:
-        result = []
-        query = self.query_wp("SELECT * FROM planes WHERE id_podr=?",
-                              [id_podr])
-        while query.next():
-            plane = Plane()
-            plane.unpack_plane(query.record())
-            result.append(plane)
-        return result
 
     def load_all_type(self) -> list:
         result = []
         query = self.load_all('planes_type')
         while query.next():
-            type = Type()
-            type.unpack_type(query.record())
-            result.append(type)
+            result.append(Type().unpack_type(query.record()))
         return result
-
 
     def add_spec(self, spec):
         self.query_wp(f"INSERT INTO spec (name_spec) VALUES(?)",
@@ -184,10 +166,10 @@ class Database:
     def add_type(self, type):
         self.query_wp("INSERT INTO planes_type (name_type) VALUES(?)", [type.name_type])
 
-    def load_type_by_id(self, id_type) -> str:
-        query = self.query_wp(f"SELECT name_type FROM plane_types WHERE id_type={id_type}")
+    def load_type_by_id(self, id_type) -> Type:
+        query = self.query_wp(f"SELECT * FROM plane_types WHERE id_type={id_type}")
         query.first()
-        return query.value(0)
+        return Type().unpack_type(query.record())
 
     def update_type(self, type):
         self.query_wp("UPDATE planes_type SET name_type=? WHERE id_type=?", [type.name_type, type.id_type])
