@@ -117,14 +117,14 @@ class Database:
 
         query_text = ("UPDATE lk SET "
                       "tlg=?, date_tlg=?, date_vypoln=?, opisanie=?, "
-                      "lk=?, komu_spec=?, komu_planes, complete=?, "
+                      "lk=?, komu_spec=?, komu_planes=?, complete=?, "
                       "otvet=?, date_otvet=?, planes=? WHERE id_lk=?")
 
         query_values = [
             lk.tlg, lk.date_tlg, lk.date_vypoln,
-            lk.opisanie, lk.lk, lk.komu_spec,
-            lk.komu_planes, lk.complete, lk.otvet,
-            lk.date_otvet, lk.planes, lk.id_lk]
+            lk.opisanie, lk.lk, json.dumps(lk.komu_spec),
+            json.dumps(lk.komu_planes), lk.complete, lk.otvet,
+            lk.date_otvet, json.dumps(lk.planes), lk.id_lk]
 
         self.query_wp(query_text, query_values)
 

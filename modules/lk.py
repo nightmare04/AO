@@ -49,6 +49,7 @@ class LK:
         self.komu_spec = self.pack_komu_spec(form)
         self.complete = form.lk.complete
         self.planes = self.pack_planes(form)
+        return self
 
     @staticmethod
     def pack_komu_planes(form: AddLk) -> list:

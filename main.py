@@ -246,9 +246,9 @@ class EditLK(AddLk):
                 spec_btn.setChecked(True)
 
     def save_lk(self):
-        data = LK()
-        data.pack_lk(self)
-        db.update_lk(data)
+        listk = LK()
+        listk.pack_lk(self)
+        db.update_lk(listk)
         self.close()
 
     def delete_lk(self):
@@ -308,10 +308,10 @@ class Complete(QtWidgets.QWidget):
 
 
 class EditComplete(QtWidgets.QWidget):
-    def __init__(self, p, listk, parent=None):
+    def __init__(self, pl, listk, parent=None):
         super().__init__(parent)
         self.lk = listk
-        self.plane = p
+        self.plane = pl
         self.resize(200, 200)
         self.setWindowTitle(f'Самолет {self.plane.bort_num}')
         self.main_layout = QVBoxLayout()
