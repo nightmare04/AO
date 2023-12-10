@@ -4,12 +4,12 @@ from PyQt6.QtCore import QDate
 from PyQt6.QtGui import QColor
 from ui import *
 from modules import *
-import ctypes
 from datetime import datetime
 from collections import namedtuple
-import json
 from docxtpl import DocxTemplate
+import json
 import os
+import ctypes
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -78,7 +78,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.tableWidget.hideColumn(0)
         self.ui.tableWidget.cellDoubleClicked.connect(lambda row: self.open_complete_form(row))
         self.ui.tableWidget.setSortingEnabled(True)
-        self.ui.tableWidget.sortByColumn(5, Qt.SortOrder.AscendingOrder)
 
     def open_complete_form(self, row):
         listk = db.load_lk(self.ui.tableWidget.item(row, 0).text())
@@ -112,7 +111,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.ui.tableWidget.setCellWidget(row, 7, btn)
                 row += 1
 
-    def calc_nevyp(self, listk) -> str:
+    @staticmethod
+    def calc_nevyp(listk) -> str:
         done, not_done = db.get_not_done_planes(listk)
         if len(not_done) == 0:
             return "Выполнено на всех!"
@@ -455,11 +455,12 @@ class Complete(QtWidgets.QWidget):
                 btn.setStyleSheet("background-color: red; color: white;")
 
     def create_doc(self):
-        context = {}
-        context['tlg'] = str(self.lk.tlg)
-        context['date_tlg'] = str(self.lk.date_tlg)
-        context['lk'] = str(self.lk.lk)
-        context['today'] = datetime.today().strftime("%d.%m.%Y")
+        context = {
+            'tlg': str(self.lk.tlg),
+            'date_tlg': str(self.lk.date_tlg),
+            'lk': str(self.lk.lk),
+            'today': datetime.today().strftime("%d.%m.%Y")
+        }
 
         doc = DocxTemplate("templates/Телеграмма.docx")
         doc.render(context)
