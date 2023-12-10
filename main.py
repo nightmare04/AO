@@ -1,5 +1,6 @@
 from PyQt6.QtWidgets import (QGridLayout, QTableWidget, QTableWidgetItem, QPushButton, QGroupBox,
-                             QHBoxLayout, QVBoxLayout, QLabel, QLineEdit, QComboBox, QCheckBox, QWidgetAction)
+                             QHBoxLayout, QVBoxLayout, QLabel, QLineEdit, QComboBox, QCheckBox,
+                             QDateEdit, QWidgetAction)
 from PyQt6.QtCore import QDate
 from PyQt6.QtGui import QColor
 from ui import *
@@ -29,19 +30,22 @@ class MainWindow(QtWidgets.QMainWindow):
         self.fill_checks()
         self.show()
 
-
         self.ui.add_btn.clicked.connect(self.add_form)
         self.ui.podr_setup_action.triggered.connect(self.open_setup_podr)
         self.ui.spec_setup_action.triggered.connect(self.open_setup_spec)
         self.ui.types_setup_action.triggered.connect(self.open_setup_type)
         self.ui.plane_setup_action.triggered.connect(self.open_setup_plane)
         self.ui.lk_action.triggered.connect(self.list_lk)
+        self.ui.checks_setup_action.triggered.connect(self.open_setup_checks)
 
     def event(self, e):
         if e.type() == QtCore.QEvent.Type.WindowActivate:
             self.fill_table()
         return QtWidgets.QWidget.event(self, e)
 
+    def open_setup_checks(self):
+        self.new_form = Checks()
+        self.new_form.show()
     def fill_checks(self):
         pass
     def list_lk(self):
@@ -1037,6 +1041,109 @@ class Listlk(QtWidgets.QWidget):
             self.table.setItem(row, 6, QTableWidgetItem(complete))
             self.table.setCellWidget(row, 7, btn)
             row += 1
+
+
+class Checks(QtWidgets.QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.resize(500, 300)
+        self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
+        self.setWindowTitle("Проверки")
+        self.new_window = None
+
+        self.main_layout = QVBoxLayout()
+        self.setLayout(self.main_layout)
+
+        self.table = QTableWidget()
+        self.main_layout.addWidget(self.table)
+        self.table.setColumnCount(4)
+        self.table.setHorizontalHeaderLabels(('Название', 'Периодичность', 'Дата последней проверки', ''))
+        self.table.setColumnWidth(2, 160)
+
+        self.add_btn = QPushButton("Добавить")
+        self.add_btn.clicked.connect(self.open_add_form)
+        self.main_layout.addWidget(self.add_btn)
+
+        self.all_checks = db.load_all_checks()
+
+    def event(self, e):
+        if e.type() == QtCore.QEvent.Type.WindowActivate:
+            self.fill_table()
+        return QtWidgets.QWidget.event(self, e)
+    def open_add_form(self):
+        self.new_window = AddCheck()
+        self.new_window.show()
+
+    def fill_table(self):
+        self.table.setRowCount(len(self.all_checks))
+        row = 0
+        for check in self.all_checks:
+            btn = QPushButton("Изменить")
+            btn.check = check
+            btn.clicked.connect(self.edit_check)
+            self.table.setItem(row, 0, QTableWidgetItem(check.name_check))
+            self.table.setItem(row, 1, QTableWidgetItem(check.period))
+            self.table.setItem(row, 2, QTableWidgetItem(check.last_check))
+            self.table.setCellWidget(row, 3, btn)
+
+            row += 1
+
+    def edit_check(self):
+        btn = self.sender()
+        self.new_window = EditCheck(btn.check)
+        self.new_window.show()
+
+
+
+class AddCheck(QtWidgets.QWidget):
+    def __init__(self):
+        super().__init__()
+        self.resize(300, 300)
+        self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
+        self.setWindowTitle("Добавить проверку")
+        self.main_layout = QGridLayout()
+        self.setLayout(self.main_layout)
+
+        self.check = Check()
+
+        self.name_label = QLabel("Название:")
+        self.name_line_edit = QLineEdit()
+        self.main_layout.addWidget(self.name_label, 0, 0)
+        self.main_layout.addWidget(self.name_line_edit, 0 ,1)
+
+        self.period_label = QLabel("Периодичность:")
+        self.period_combobox = QComboBox()
+        self.period_combobox.addItems(('месяц', 'квартал', 'год'))
+        self.main_layout.addWidget(self.period_label, 1, 0)
+        self.main_layout.addWidget(self.period_combobox, 1, 1)
+
+        self.last_check_label = QLabel("Дата проверки:")
+        self.last_check_date = QDateEdit()
+        self.last_check_date.setCalendarPopup(True)
+        self.last_check_date.setDate(QDate.currentDate())
+        self.main_layout.addWidget(self.last_check_label, 2, 0)
+        self.main_layout.addWidget(self.last_check_date, 2, 1)
+
+        self.save_btn = QPushButton("Сохранить")
+        self.save_btn.clicked.connect(self.save_check)
+        self.cancel_btn = QPushButton("Закрыть")
+        self.cancel_btn.clicked.connect(self.close)
+        self.main_layout.addWidget(self.save_btn, 3, 0)
+        self.main_layout.addWidget(self.cancel_btn, 3, 1)
+
+    def save_check(self):
+        self.check.pack_check(self)
+        db.add_check(self.check)
+        self.close()
+
+
+class EditCheck(AddCheck):
+    def __init__(self, check):
+        super().__init__()
+        self.setWindowTitle("Изменить проверку")
+        self.name_line_edit.setText(check.name_check)
+        self.period_combobox.setCurrentText(check.period)
+        self.last_check_date.setDate(datetime.strptime(check.last_check, '%d.%m.%Y'))
 
 
 def except_hook(cls, exception, traceback):

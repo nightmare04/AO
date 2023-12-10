@@ -8,6 +8,7 @@ from modules.podr import *
 from modules.plane import *
 from modules.type import *
 from modules.lk import *
+from modules.check import *
 
 
 class Database:
@@ -233,3 +234,25 @@ class Database:
                 not_done.append(plane)
         return done, not_done
 
+    def add_check(self, check: Check):
+        query_text = "INSERT INTO checks (name_check, period, last_check) VALUES(?, ?, ?)"
+        query_values = [check.name_check, check.period, check.last_check]
+        self.query_wp(query_text, query_values)
+
+    def load_check(self, check: Check):
+        query = self.query_wp(f"SELECT * FROM checks WHERE id_check={check.id_check}")
+        query.first()
+        return Check().unpack_check(query.record())
+
+    def load_all_checks(self):
+        result = []
+        query = self.query_wp(f"SELECT * FROM checks")
+        while query.next():
+            check = Check()
+            check.unpack_check(query.record())
+            result.append(check)
+        return result
+
+    def delete_check(self, check: Check):
+        self.query_wp("DELETE FROM checks WHERE id_check=?", [check.id_check])
+        self.query_wp("DELETE FROM checks_date WHERE id_check=?", [check.id_check])
