@@ -219,3 +219,16 @@ class Database:
         while query.next():
             result.append(query.value(0))
         return result
+
+    def get_not_done_planes(self, lk: LK):
+        done = []
+        not_done = []
+        for id_plane in lk.komu_planes:
+            plane = self.load_plane(id_plane)
+            cmp = self.get_complete(lk, plane)
+            if len(cmp) == len(lk.komu_spec):
+                done.append(plane)
+            else:
+                not_done.append(plane)
+        return done, not_done
+

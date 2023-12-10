@@ -1,6 +1,7 @@
 from PyQt6.QtWidgets import (QGridLayout, QTableWidget, QTableWidgetItem, QPushButton, QGroupBox,
                              QHBoxLayout, QVBoxLayout, QLabel, QLineEdit, QComboBox, QCheckBox, QWidgetAction)
 from PyQt6.QtCore import QDate
+from PyQt6.QtGui import QColor
 from ui import *
 from modules import *
 import ctypes
@@ -34,7 +35,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.plane_setup_action.triggered.connect(self.open_setup_plane)
 
         self.ui.lk_action.triggered.connect(self.list_lk)
-
 
     def event(self, e):
         if e.type() == QtCore.QEvent.Type.WindowActivate:
@@ -77,6 +77,8 @@ class MainWindow(QtWidgets.QMainWindow):
         ])
         self.ui.tableWidget.hideColumn(0)
         self.ui.tableWidget.cellDoubleClicked.connect(lambda row: self.open_complete_form(row))
+        self.ui.tableWidget.setSortingEnabled(True)
+        self.ui.tableWidget.sortByColumn(5, Qt.SortOrder.AscendingOrder)
 
     def open_complete_form(self, row):
         listk = db.load_lk(self.ui.tableWidget.item(row, 0).text())
@@ -94,18 +96,32 @@ class MainWindow(QtWidgets.QMainWindow):
                 btn.lk = listk
                 btn.clicked.connect(self.open_edit_form)
                 ost = (datetime.strptime(listk.date_vypoln, '%d.%m.%Y') - datetime.today())
+                if ost.days + 1 < 5:
+                    ost_wid = QTableWidgetItem(str(ost.days + 1))
+                    ost_wid.setBackground(QColor("red"))
+                else:
+                    ost_wid = QTableWidgetItem(str(ost.days + 1))
+
                 self.ui.tableWidget.setItem(row, 0, QTableWidgetItem(str(listk.id_lk)))
                 self.ui.tableWidget.setItem(row, 1, QTableWidgetItem(str(listk.tlg)))
                 self.ui.tableWidget.setItem(row, 2, QTableWidgetItem(str(listk.date_tlg)))
                 self.ui.tableWidget.setItem(row, 3, QTableWidgetItem(str(listk.date_vypoln)))
                 self.ui.tableWidget.setItem(row, 4, QTableWidgetItem(str(listk.lk)))
-                self.ui.tableWidget.setItem(row, 5, QTableWidgetItem(str(ost.days + 1)))
+                self.ui.tableWidget.setItem(row, 5, ost_wid)
                 self.ui.tableWidget.setItem(row, 6, QTableWidgetItem(self.calc_nevyp(listk)))
                 self.ui.tableWidget.setCellWidget(row, 7, btn)
                 row += 1
 
-    def calc_nevyp(self, listk):
-        pass
+    def calc_nevyp(self, listk) -> str:
+        done, not_done = db.get_not_done_planes(listk)
+        if len(not_done) == 0:
+            return "Выполнено на всех!"
+        else:
+            text = ''
+            for pl in not_done:
+                text += f'{pl.bort_num} ,'
+
+            return text[:-2]
 
     def add_form(self):
         """Открываем новую форму добавления листа контроля"""
@@ -420,10 +436,10 @@ class Complete(QtWidgets.QWidget):
                 self.ui.podr_layout.addWidget(groupbox)
                 self.plane_groups.append(groupbox)
 
-
         self.ui.complete_checkbox.setChecked(bool(self.lk.complete))
         self.ui.otvet_linedit.setText(self.lk.otvet)
-        self.ui.otvet_dateedit.setDate(datetime.strptime(str(self.lk.date_otvet), '%d.%m.%Y'))
+        if not self.lk.date_otvet == '':
+            self.ui.otvet_dateedit.setDate(datetime.strptime(str(self.lk.date_otvet), '%d.%m.%Y'))
 
     def event(self, e):
         if e.type() == QtCore.QEvent.Type.WindowActivate:
