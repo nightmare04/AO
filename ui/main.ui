@@ -56,6 +56,7 @@
     <property name="title">
      <string>Листы контроля</string>
     </property>
+    <addaction name="lk_action"/>
    </widget>
    <widget class="QMenu" name="menu_3">
     <property name="title">
@@ -87,7 +88,7 @@
     <string>Настройки</string>
    </property>
   </action>
-  <action name="action_3">
+  <action name="lk_action">
    <property name="text">
     <string>Листы контроля</string>
    </property>

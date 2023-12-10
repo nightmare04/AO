@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import (QGridLayout, QTableWidget, QTableWidgetItem, QPushButton, QGroupBox,
-                             QHBoxLayout, QVBoxLayout, QLabel, QLineEdit, QComboBox, QCheckBox)
+                             QHBoxLayout, QVBoxLayout, QLabel, QLineEdit, QComboBox, QCheckBox, QWidgetAction)
 from PyQt6.QtCore import QDate
 from ui import *
 from modules import *
@@ -9,6 +9,7 @@ from collections import namedtuple
 import json
 from docxtpl import DocxTemplate
 import os
+
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
@@ -24,12 +25,16 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.add_btn.clicked.connect(self.add_form)
         self.setWindowTitle("Старший инженер по специальности")
         self.show()
+
         db.create_connection()
+
         self.ui.podr_setup_action.triggered.connect(self.open_setup_podr)
         self.ui.spec_setup_action.triggered.connect(self.open_setup_spec)
         self.ui.types_setup_action.triggered.connect(self.open_setup_type)
         self.ui.plane_setup_action.triggered.connect(self.open_setup_plane)
-        self.ui.menu_2.triggered.connect(self.list_lk)
+
+        self.ui.lk_action.triggered.connect(self.list_lk)
+
 
     def event(self, e):
         if e.type() == QtCore.QEvent.Type.WindowActivate:
@@ -58,7 +63,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def init_table(self):
         """Описываем параметры таблицы долгов"""
-        self.ui.tableWidget.setColumnCount(7)
+        self.ui.tableWidget.setColumnCount(8)
         self.ui.tableWidget.setRowCount(0)
         self.ui.tableWidget.setHorizontalHeaderLabels([
             "ID",
@@ -67,6 +72,7 @@ class MainWindow(QtWidgets.QMainWindow):
             "Срок выполнения",
             "Номер ЛК",
             "Осталось дней",
+            "Не выполнено",
             ""
         ])
         self.ui.tableWidget.hideColumn(0)
@@ -94,8 +100,12 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.ui.tableWidget.setItem(row, 3, QTableWidgetItem(str(listk.date_vypoln)))
                 self.ui.tableWidget.setItem(row, 4, QTableWidgetItem(str(listk.lk)))
                 self.ui.tableWidget.setItem(row, 5, QTableWidgetItem(str(ost.days + 1)))
-                self.ui.tableWidget.setCellWidget(row, 6, btn)
+                self.ui.tableWidget.setItem(row, 6, QTableWidgetItem(self.calc_nevyp(listk)))
+                self.ui.tableWidget.setCellWidget(row, 7, btn)
                 row += 1
+
+    def calc_nevyp(self, listk):
+        pass
 
     def add_form(self):
         """Открываем новую форму добавления листа контроля"""
@@ -964,7 +974,7 @@ class EditPlane(AddPlane):
 class Listlk(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
-        self.resize(300,400)
+        self.resize(900,400)
         self.setWindowTitle('Листы контроля')
         self.main_layout = QVBoxLayout()
         self.setLayout(self.main_layout)
@@ -982,6 +992,32 @@ class Listlk(QtWidgets.QWidget):
             "Выполнено",
             ""
         ])
+
+        self.lks = db.load_all_lk()
+        self.fill_table()
+    def fill_table(self):
+        self.table.setRowCount(len(self.lks))
+        row = 0
+        for listk in self.lks:
+            btn = QPushButton("Изменить")
+            btn.lk = listk
+            btn.clicked.connect(main.open_edit_form)
+
+            if listk.complete:
+                complete = "Выполнено"
+            else:
+                complete = "Не выполнено"
+
+            ost = (datetime.strptime(listk.date_vypoln, '%d.%m.%Y') - datetime.today())
+            self.table.setItem(row, 0, QTableWidgetItem(str(listk.tlg)))
+            self.table.setItem(row, 1, QTableWidgetItem(str(listk.date_tlg)))
+            self.table.setItem(row, 2, QTableWidgetItem(str(listk.date_vypoln)))
+            self.table.setItem(row, 3, QTableWidgetItem(str(listk.lk)))
+            self.table.setItem(row, 4, QTableWidgetItem(str(listk.otvet)))
+            self.table.setItem(row, 5, QTableWidgetItem(str(listk.date_otvet)))
+            self.table.setItem(row, 6, QTableWidgetItem(complete))
+            self.table.setCellWidget(row, 7, btn)
+            row += 1
 
 
 def except_hook(cls, exception, traceback):
