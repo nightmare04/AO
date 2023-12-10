@@ -162,6 +162,7 @@ class Database:
 
     def delete_podr(self, id_podr):
         self.query_wp("DELETE FROM podr WHERE id_podr=?", [id_podr])
+        self.query_wp("DELETE FROM plane WHERE id_podr=?", [id_podr])
 
     def add_type(self, t):
         self.query_wp("INSERT INTO planes_type (name_type) VALUES(?)", [t.name_type])
@@ -176,7 +177,7 @@ class Database:
 
     def delete_type(self, id_type):
         self.query_wp("DELETE FROM planes_type WHERE id_type=?", [id_type])
-
+        self.query_wp("DELETE FROM planes WHERE id_type=?", [id_type])
     def add_plane(self, plane: Plane):
         self.query_wp(
             "INSERT INTO planes (id_type, id_podr, bort_num, zav_num) VALUES(?, ?, ?, ?)",
@@ -192,18 +193,18 @@ class Database:
                       [id_plane])
 
     def add_complete(self, listk: LK, pl: Plane, spec: Spec):
-        query_text = ("INSERT INTO lk_compl (id_lk, id_plane, id_spec) VALUES(?, ?, ?)")
+        query_text = "INSERT INTO lk_compl (id_lk, id_plane, id_spec) VALUES(?, ?, ?)"
         query_values = [listk.id_lk, pl.id_plane, spec.id_spec]
         self.query_wp(query_text, query_values)
 
     def del_complete(self, listk: LK, pl: Plane, spec: Spec):
-        query_text = ("DELETE FROM lk_compl WHERE id_lk=? AND id_plane=? AND id_spec=?")
+        query_text = "DELETE FROM lk_compl WHERE id_lk=? AND id_plane=? AND id_spec=?"
         query_values = [listk.id_lk, pl.id_plane, spec.id_spec]
         self.query_wp(query_text, query_values)
 
     def get_complete(self, listk: LK, pl: Plane) -> list:
         result = []
-        query_text = ("SELECT id_spec FROM lk_compl WHERE id_lk=? AND id_plane=?")
+        query_text = "SELECT id_spec FROM lk_compl WHERE id_lk=? AND id_plane=?"
         query_values = [listk.id_lk, pl.id_plane]
         query = self.query_wp(query_text, query_values)
         while query.next():

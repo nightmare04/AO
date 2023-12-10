@@ -77,18 +77,19 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.tableWidget.setRowCount(len(self.lks))
         row = 0
         for listk in self.lks:
-            btn = QPushButton("Изменить")
-            btn.lk = listk
-            btn.clicked.connect(self.open_edit_form)
-            ost = (datetime.strptime(listk.date_vypoln, '%d.%m.%Y') - datetime.today())
-            self.ui.tableWidget.setItem(row, 0, QTableWidgetItem(str(listk.id_lk)))
-            self.ui.tableWidget.setItem(row, 1, QTableWidgetItem(str(listk.tlg)))
-            self.ui.tableWidget.setItem(row, 2, QTableWidgetItem(str(listk.date_tlg)))
-            self.ui.tableWidget.setItem(row, 3, QTableWidgetItem(str(listk.date_vypoln)))
-            self.ui.tableWidget.setItem(row, 4, QTableWidgetItem(str(listk.lk)))
-            self.ui.tableWidget.setItem(row, 5, QTableWidgetItem(str(ost.days + 1)))
-            self.ui.tableWidget.setCellWidget(row, 6, btn)
-            row += 1
+            if not listk.complete:
+                btn = QPushButton("Изменить")
+                btn.lk = listk
+                btn.clicked.connect(self.open_edit_form)
+                ost = (datetime.strptime(listk.date_vypoln, '%d.%m.%Y') - datetime.today())
+                self.ui.tableWidget.setItem(row, 0, QTableWidgetItem(str(listk.id_lk)))
+                self.ui.tableWidget.setItem(row, 1, QTableWidgetItem(str(listk.tlg)))
+                self.ui.tableWidget.setItem(row, 2, QTableWidgetItem(str(listk.date_tlg)))
+                self.ui.tableWidget.setItem(row, 3, QTableWidgetItem(str(listk.date_vypoln)))
+                self.ui.tableWidget.setItem(row, 4, QTableWidgetItem(str(listk.lk)))
+                self.ui.tableWidget.setItem(row, 5, QTableWidgetItem(str(ost.days + 1)))
+                self.ui.tableWidget.setCellWidget(row, 6, btn)
+                row += 1
 
     def add_form(self):
         """Открываем новую форму добавления листа контроля"""
@@ -105,9 +106,10 @@ class MainWindow(QtWidgets.QMainWindow):
 class AddLk(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
-        self.selectors_by_podr = []
         self.lk = LK()
         self.spec_btns = []
+        self.type_btns = []
+        self.podr_btns = []
         self.plane_btns = []
         self.plane_groups = []
         self.ui = Ui_Add_lk_form()
@@ -117,12 +119,12 @@ class AddLk(QtWidgets.QWidget):
         self.ui.add_btn.clicked.connect(self.add_lk_to_db)
         self.ui.cancel_btn.clicked.connect(self.close)
         self.fill_planes()
-        self.init_planes()
+        self.fill_planes_to_podr()
         self.init_spec()
         self.setAcceptDrops(True)
-        self.fill_selector()
+        self.fill_selectors()
 
-    def fill_selector(self):
+    def fill_selectors(self):
         main_groupbox = QGroupBox("Выбрать:")
         group_layout = QHBoxLayout()
         main_groupbox.setLayout(group_layout)
@@ -141,16 +143,15 @@ class AddLk(QtWidgets.QWidget):
             btn.setCheckable(True)
             btn.clicked.connect(self.select_by_podr)
             btn.podr = pd
+            self.podr_btns.append(btn)
             if btn.podr.with_planes:
                 if col < 4:
                     podr_groupbox_layout.addWidget(btn, row, col)
-                    self.selectors_by_podr.append(btn)
                     col += 1
                 else:
                     col = 0
                     row += 1
                     podr_groupbox_layout.addWidget(btn, row, col)
-                    self.selectors_by_podr.append(btn)
                     col += 1
 
         type_groupbox = QGroupBox("по типу:")
@@ -166,6 +167,7 @@ class AddLk(QtWidgets.QWidget):
             btn.setCheckable(True)
             btn.clicked.connect(self.select_by_type)
             btn.type = tp
+            self.type_btns.append(btn)
             if col < 4:
                 type_groupbox_layout.addWidget(btn, row, col)
                 col += 1
@@ -176,16 +178,29 @@ class AddLk(QtWidgets.QWidget):
                 col += 1
 
     def select_by_podr(self):
+
+        for btn in self.type_btns:
+            btn.setChecked(False)
+
         btns = self.findChildren(DragButton)
-        for sel_podr in self.selectors_by_podr:
+        for podr_btn in self.podr_btns:
             for btn in btns:
-                if btn.plane.id_podr == sel_podr.podr.id_podr and sel_podr.isChecked():
+                if btn.plane.id_podr == podr_btn.podr.id_podr and podr_btn.isChecked():
                     btn.setChecked(True)
-                elif btn.plane.id_podr == sel_podr.podr.id_podr:
+                elif btn.plane.id_podr == podr_btn.podr.id_podr:
                     btn.setChecked(False)
 
     def select_by_type(self):
-        pass
+        for btn in self.podr_btns:
+            btn.setChecked(False)
+
+        btns = self.findChildren(DragButton)
+        for type_btn in self.type_btns:
+            for btn in btns:
+                if btn.plane.id_type == type_btn.type.id_type and type_btn.isChecked():
+                    btn.setChecked(True)
+                elif btn.plane.id_type == type_btn.type.id_type:
+                    btn.setChecked(False)
 
     def fill_planes(self):
         for pl in db.load_all_planes():
@@ -195,7 +210,7 @@ class AddLk(QtWidgets.QWidget):
             btn.plane = pl
             self.plane_btns.append(btn)
 
-    def init_planes(self):
+    def fill_planes_to_podr(self):
         all_podr = db.load_all_podr()
         for p in all_podr:
             row = 0
@@ -205,7 +220,6 @@ class AddLk(QtWidgets.QWidget):
             groupbox.setLayout(layout_planes)
             groupbox.podr = p
             groupbox.plane_btns = []
-            # groupbox.toggled.connect(self.check_toggle)
             self.ui.planesLayout.addWidget(groupbox)
             self.plane_groups.append(groupbox)
             for plane_btn in self.plane_btns:
@@ -235,7 +249,13 @@ class AddLk(QtWidgets.QWidget):
                         row += 1
                         groupbox.layout().addWidget(plane_btn, row, col)
                         col += 1
-        self.select_by_podr()
+        for btn in self.type_btns:
+            if btn.isChecked():
+                self.select_by_type()
+
+        for btn in self.podr_btns:
+            if btn.isChecked():
+                self.select_by_podr()
 
     def check_toggle(self):
         """Проверка флага на подразделении"""
@@ -271,8 +291,9 @@ class AddLk(QtWidgets.QWidget):
 class EditLK(AddLk):
     def __init__(self, listk):
         super().__init__()
+        self.edit = True
         self.lk = listk
-        self.setWindowTitle("Изменить")
+        self.setWindowTitle(f"Лист контроля №{self.lk.lk}")
         self.ui.add_btn.setText("Сохранить")
         self.ui.add_btn.clicked.disconnect()
         self.ui.add_btn.clicked.connect(self.save_lk)
@@ -304,6 +325,7 @@ class EditLK(AddLk):
         self.ui.SrokDateEdit.setDate(datetime.strptime(str(self.lk.date_vypoln), '%d.%m.%Y'))
         self.ui.textEdit.setText(self.lk.opisanie)
         self.ui.LkLineEdit.setText(self.lk.lk)
+
         for plane_btn in self.plane_btns:
             plane_btn.setChecked(False)
             if plane_btn.plane.id_plane in self.lk.komu_planes:
@@ -342,29 +364,25 @@ class Complete(QtWidgets.QWidget):
         for id_plane, id_podr in self.lk.planes.items():
             pl = db.load_plane(id_plane)
             pl.id_podr = id_podr
-            btn = QPushButton(text=str(pl.bort_num))
-            btn.setFixedWidth(30)
+            btn = QPushButton(str(pl.bort_num))
+            btn.setFixedWidth(40)
             btn.plane = pl
             btn.clicked.connect(self.open_plane_complete)
             btn.setChecked(True)
             self.plane_btns.append(btn)
+
         all_podr = db.load_all_podr()
         for p in all_podr:
-            row = 0
-            col = 0
-
             groupbox = QGroupBox(p.name_podr)
             layout_planes = QGridLayout()
             groupbox.setLayout(layout_planes)
             groupbox.podr = p
             groupbox.plane_btns = []
 
-            if p.with_planes:
-                self.ui.podr_layout.addWidget(groupbox)
-                self.plane_groups.append(groupbox)
-
+            row = 0
+            col = 0
             for plane_btn in self.plane_btns:
-                if plane_btn.plane.id_plane in self.lk.komu_planes and plane_btn.plane.id_podr == p.id_podr:
+                if (plane_btn.plane.id_plane in self.lk.komu_planes) and (plane_btn.plane.id_podr == p.id_podr):
                     if col < 3:
                         layout_planes.addWidget(plane_btn, row, col)
                         col += 1
@@ -373,6 +391,23 @@ class Complete(QtWidgets.QWidget):
                         col = 0
                         layout_planes.addWidget(plane_btn, row, col)
                         col += 1
+
+                self.ui.podr_layout.addWidget(groupbox)
+                self.plane_groups.append(groupbox)
+
+    def event(self, e):
+        if e.type() == QtCore.QEvent.Type.WindowActivate:
+            self.check_complete()
+        return QtWidgets.QWidget.event(self, e)
+
+    def check_complete(self):
+        for btn in self.plane_btns:
+            if len(db.get_complete(self.lk, btn.plane)) == len(self.lk.komu_spec):
+                btn.setStyleSheet("background-color: green; color: white;")
+
+            else:
+                btn.setStyleSheet("background-color: red; color: white;")
+
 
 
     def open_plane_complete(self):
