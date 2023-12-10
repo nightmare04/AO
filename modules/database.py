@@ -53,6 +53,15 @@ class Database:
             result.append(lk)
         return result
 
+    def load_all_uncomplete_lk(self):
+        result = []
+        query_text = "SELECT * FROM lk WHERE complete=0"
+        query = self.query_wp(query_text)
+        while query.next():
+            lk = LK().unpack_lk(query.record())
+            result.append(lk)
+        return result
+
     def load_all_podr(self) -> list:
         result = []
         query = self.load_all('podr')

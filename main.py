@@ -1,11 +1,14 @@
-from PyQt6.QtWidgets import (QGridLayout, QTableWidgetItem, QPushButton, QGroupBox,
+from PyQt6.QtWidgets import (QGridLayout, QTableWidget, QTableWidgetItem, QPushButton, QGroupBox,
                              QHBoxLayout, QVBoxLayout, QLabel, QLineEdit, QComboBox, QCheckBox)
 from PyQt6.QtCore import QDate
 from ui import *
 from modules import *
 import ctypes
 from datetime import datetime
-
+from collections import namedtuple
+import json
+from docxtpl import DocxTemplate
+import os
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
@@ -14,10 +17,7 @@ class MainWindow(QtWidgets.QMainWindow):
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-        self.add_lk_form = None
-        self.edit_form = None
-        self.setup_window = None
-        self.edit_complete = None
+        self.new_form = None
         self.lks = []
         self.init_table()
         self.fill_table()
@@ -29,31 +29,37 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.spec_setup_action.triggered.connect(self.open_setup_spec)
         self.ui.types_setup_action.triggered.connect(self.open_setup_type)
         self.ui.plane_setup_action.triggered.connect(self.open_setup_plane)
+        self.ui.menu_2.triggered.connect(self.list_lk)
 
     def event(self, e):
         if e.type() == QtCore.QEvent.Type.WindowActivate:
             self.fill_table()
         return QtWidgets.QWidget.event(self, e)
 
+    def list_lk(self):
+        self.new_form = Listlk()
+        self.new_form.show()
+
     def open_setup_plane(self):
-        self.setup_window = SetupPlane()
-        self.setup_window.show()
+        self.new_form = SetupPlane()
+        self.new_form.show()
 
     def open_setup_podr(self):
-        self.setup_window = SetupPodr()
-        self.setup_window.show()
+        self.new_form = SetupPodr()
+        self.new_form.show()
 
     def open_setup_type(self):
-        self.setup_window = SetupType()
-        self.setup_window.show()
+        self.new_form = SetupType()
+        self.new_form.show()
 
     def open_setup_spec(self):
-        self.setup_window = SetupSpec()
-        self.setup_window.show()
+        self.new_form = SetupSpec()
+        self.new_form.show()
 
     def init_table(self):
         """Описываем параметры таблицы долгов"""
         self.ui.tableWidget.setColumnCount(7)
+        self.ui.tableWidget.setRowCount(0)
         self.ui.tableWidget.setHorizontalHeaderLabels([
             "ID",
             "Телеграмма",
@@ -68,12 +74,12 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def open_complete_form(self, row):
         listk = db.load_lk(self.ui.tableWidget.item(row, 0).text())
-        self.edit_complete = Complete(listk)
-        self.edit_complete.show()
+        self.new_form = Complete(listk)
+        self.new_form.show()
 
     def fill_table(self):
         """Заполняем таблицу долгами"""
-        self.lks = db.load_all_lk()
+        self.lks = db.load_all_uncomplete_lk()
         self.ui.tableWidget.setRowCount(len(self.lks))
         row = 0
         for listk in self.lks:
@@ -93,14 +99,14 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def add_form(self):
         """Открываем новую форму добавления листа контроля"""
-        self.add_lk_form = AddLk()
-        self.add_lk_form.show()
+        self.new_form = AddLk()
+        self.new_form.show()
 
     def open_edit_form(self):
         """Открытие формы редактирования листа контроля"""
         sender = self.sender()
-        self.edit_form = EditLK(sender.lk)
-        self.edit_form.show()
+        self.new_form = EditLK(sender.lk)
+        self.new_form.show()
 
 
 class AddLk(QtWidgets.QWidget):
@@ -112,12 +118,14 @@ class AddLk(QtWidgets.QWidget):
         self.podr_btns = []
         self.plane_btns = []
         self.plane_groups = []
+
         self.ui = Ui_Add_lk_form()
         self.ui.setupUi(self)
         self.ui.TlgDateEdit.setDate(QtCore.QDate().currentDate())
         self.ui.SrokDateEdit.setDate(QtCore.QDate().currentDate())
         self.ui.add_btn.clicked.connect(self.add_lk_to_db)
         self.ui.cancel_btn.clicked.connect(self.close)
+        self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
         self.fill_planes()
         self.fill_planes_to_podr()
         self.init_spec()
@@ -293,6 +301,7 @@ class EditLK(AddLk):
         super().__init__()
         self.edit = True
         self.lk = listk
+        self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
         self.setWindowTitle(f"Лист контроля №{self.lk.lk}")
         self.ui.add_btn.setText("Сохранить")
         self.ui.add_btn.clicked.disconnect()
@@ -357,7 +366,13 @@ class Complete(QtWidgets.QWidget):
         self.plane_groups = []
         self.ui = Ui_CompleteForm()
         self.ui.setupUi(self)
+
+        self.ui.create_doc_btn.clicked.connect(self.create_doc)
+        self.ui.save_btn.clicked.connect(self.save_lk)
+
+        self.ui.otvet_dateedit.setDate(QtCore.QDate().currentDate())
         self.setWindowTitle(f"Лист контроля №{str(self.lk.lk)}")
+        self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
         self.init_planes()
 
     def init_planes(self):
@@ -395,6 +410,11 @@ class Complete(QtWidgets.QWidget):
                 self.ui.podr_layout.addWidget(groupbox)
                 self.plane_groups.append(groupbox)
 
+
+        self.ui.complete_checkbox.setChecked(bool(self.lk.complete))
+        self.ui.otvet_linedit.setText(self.lk.otvet)
+        self.ui.otvet_dateedit.setDate(datetime.strptime(str(self.lk.date_otvet), '%d.%m.%Y'))
+
     def event(self, e):
         if e.type() == QtCore.QEvent.Type.WindowActivate:
             self.check_complete()
@@ -408,6 +428,27 @@ class Complete(QtWidgets.QWidget):
             else:
                 btn.setStyleSheet("background-color: red; color: white;")
 
+    def create_doc(self):
+        context = {}
+        context['tlg'] = str(self.lk.tlg)
+        context['date_tlg'] = str(self.lk.date_tlg)
+        context['lk'] = str(self.lk.lk)
+        context['today'] = datetime.today().strftime("%d.%m.%Y")
+
+        doc = DocxTemplate("templates/Телеграмма.docx")
+        doc.render(context)
+        doc.save("templates/out.docx")
+        os.system("start templates/out.docx")
+        self.close()
+
+    def save_lk(self):
+        if self.ui.complete_checkbox.isChecked():
+            self.lk.complete = 1
+        if not self.ui.otvet_linedit.text() == "":
+            self.lk.otvet = self.ui.otvet_linedit.text()
+            self.lk.date_otvet = self.ui.otvet_dateedit.date().toString('dd.MM.yyyy')
+        db.update_lk(self.lk)
+        self.close()
 
 
     def open_plane_complete(self):
@@ -427,6 +468,7 @@ class EditComplete(QtWidgets.QWidget):
         self.main_layout = QVBoxLayout()
         self.setLayout(self.main_layout)
         self.specs = db.load_all_spec()
+        self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
         for sp in self.specs:
             btn = QPushButton(sp.name_spec)
             btn.spec = sp
@@ -467,6 +509,7 @@ class SetupPodr(QtWidgets.QWidget):
         self.close_btn.clicked.connect(self.close)
         self.btns_layout.addWidget(self.add_btn)
         self.btns_layout.addWidget(self.close_btn)
+        self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
 
     def event(self, e):
         if e.type() == QtCore.QEvent.Type.WindowActivate:
@@ -504,6 +547,7 @@ class SetupPodr(QtWidgets.QWidget):
 class AddPodr(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
+        self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
         self.podr = Podr()
         self.main_layout = QGridLayout()
         self.setLayout(self.main_layout)
@@ -533,6 +577,7 @@ class AddPodr(QtWidgets.QWidget):
 class EditPodr(AddPodr):
     def __init__(self, p):
         super().__init__()
+        self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
         self.podr = p
         self.setWindowTitle('Изменить подразделение')
         self.add_btn.setText('Сохранить')
@@ -562,6 +607,7 @@ class EditPodr(AddPodr):
 class SetupSpec(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
+        self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
         self.add_form = None
         self.change_form = None
         self.setWindowTitle("Специальности")
@@ -616,6 +662,7 @@ class SetupSpec(QtWidgets.QWidget):
 class AddSpec(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
+        self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
         self.spec = Spec()
         self.main_layout = QGridLayout()
         self.setLayout(self.main_layout)
@@ -640,6 +687,7 @@ class AddSpec(QtWidgets.QWidget):
 class EditSpec(AddSpec):
     def __init__(self, s):
         super().__init__()
+        self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
         self.setWindowTitle('Изменить специальность')
         self.add_btn.setText('Сохранить')
         self.spec = s
@@ -664,6 +712,7 @@ class EditSpec(AddSpec):
 class SetupType(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
+        self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
         self.add_form = None
         self.change_form = None
         self.setWindowTitle("Типы самолетов")
@@ -718,6 +767,7 @@ class SetupType(QtWidgets.QWidget):
 class AddType(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
+        self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
         self.type = Type()
         self.main_layout = QGridLayout()
         self.setLayout(self.main_layout)
@@ -740,6 +790,7 @@ class AddType(QtWidgets.QWidget):
 class EditType(AddType):
     def __init__(self, t):
         super().__init__()
+        self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
         self.setWindowTitle('Изменить тип самолета')
         self.add_btn.setText('Сохранить')
         self.type = t
@@ -764,6 +815,7 @@ class EditType(AddType):
 class SetupPlane(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
+        self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
         self.resize(500, 500)
         self.add_form = None
         self.change_form = None
@@ -820,6 +872,7 @@ class SetupPlane(QtWidgets.QWidget):
 class AddPlane(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
+        self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
         self.plane = Plane()
         self.types = {}
         self.podrs = {}
@@ -879,6 +932,7 @@ class AddPlane(QtWidgets.QWidget):
 class EditPlane(AddPlane):
     def __init__(self, p):
         super().__init__()
+        self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
         self.plane = p
         self.setWindowTitle('Изменить самолет')
 
@@ -905,6 +959,29 @@ class EditPlane(AddPlane):
     def del_plane(self):
         db.delete_type(self.type.id_type)
         self.close()
+
+
+class Listlk(QtWidgets.QWidget):
+    def __init__(self):
+        super().__init__()
+        self.resize(300,400)
+        self.setWindowTitle('Листы контроля')
+        self.main_layout = QVBoxLayout()
+        self.setLayout(self.main_layout)
+
+        self.table = QTableWidget()
+        self.main_layout.addWidget(self.table)
+        self.table.setColumnCount(8)
+        self.table.setHorizontalHeaderLabels([
+            "Телеграмма",
+            "Дата телеграммы",
+            "Срок выполнения",
+            "Лист контроля",
+            "Ответ",
+            "Дата ответа",
+            "Выполнено",
+            ""
+        ])
 
 
 def except_hook(cls, exception, traceback):

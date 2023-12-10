@@ -62,7 +62,6 @@ class Ui_MainWindow(object):
         self.types_setup_action.setObjectName("types_setup_action")
         self.menu.addAction(self.action)
         self.menu.addAction(self.action_2)
-        self.menu_2.addAction(self.action_3)
         self.menu_4.addAction(self.podr_setup_action)
         self.menu_4.addAction(self.types_setup_action)
         self.menu_4.addAction(self.plane_setup_action)

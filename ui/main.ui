@@ -56,7 +56,6 @@
     <property name="title">
      <string>Листы контроля</string>
     </property>
-    <addaction name="action_3"/>
    </widget>
    <widget class="QMenu" name="menu_3">
     <property name="title">
