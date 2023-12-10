@@ -1,1 +1,4 @@
 /database/ias.db-journal
+/build/
+/dist/
+/output/
