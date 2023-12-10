@@ -21,19 +21,20 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.setupUi(self)
         self.new_form = None
         self.lks = []
+        db.create_connection()
+        self.setWindowTitle("Старший инженер по специальности")
+
         self.init_table()
         self.fill_table()
-        self.ui.add_btn.clicked.connect(self.add_form)
-        self.setWindowTitle("Старший инженер по специальности")
+        self.fill_checks()
         self.show()
 
-        db.create_connection()
 
+        self.ui.add_btn.clicked.connect(self.add_form)
         self.ui.podr_setup_action.triggered.connect(self.open_setup_podr)
         self.ui.spec_setup_action.triggered.connect(self.open_setup_spec)
         self.ui.types_setup_action.triggered.connect(self.open_setup_type)
         self.ui.plane_setup_action.triggered.connect(self.open_setup_plane)
-
         self.ui.lk_action.triggered.connect(self.list_lk)
 
     def event(self, e):
@@ -41,6 +42,8 @@ class MainWindow(QtWidgets.QMainWindow):
             self.fill_table()
         return QtWidgets.QWidget.event(self, e)
 
+    def fill_checks(self):
+        pass
     def list_lk(self):
         self.new_form = Listlk()
         self.new_form.show()
@@ -476,7 +479,6 @@ class Complete(QtWidgets.QWidget):
             self.lk.date_otvet = self.ui.otvet_dateedit.date().toString('dd.MM.yyyy')
         db.update_lk(self.lk)
         self.close()
-
 
     def open_plane_complete(self):
         sender = self.sender()
@@ -991,7 +993,7 @@ class EditPlane(AddPlane):
 class Listlk(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
-        self.resize(900,400)
+        self.resize(900, 400)
         self.setWindowTitle('Листы контроля')
         self.main_layout = QVBoxLayout()
         self.setLayout(self.main_layout)
@@ -1012,6 +1014,7 @@ class Listlk(QtWidgets.QWidget):
 
         self.lks = db.load_all_lk()
         self.fill_table()
+
     def fill_table(self):
         self.table.setRowCount(len(self.lks))
         row = 0
@@ -1025,7 +1028,6 @@ class Listlk(QtWidgets.QWidget):
             else:
                 complete = "Не выполнено"
 
-            ost = (datetime.strptime(listk.date_vypoln, '%d.%m.%Y') - datetime.today())
             self.table.setItem(row, 0, QTableWidgetItem(str(listk.tlg)))
             self.table.setItem(row, 1, QTableWidgetItem(str(listk.date_tlg)))
             self.table.setItem(row, 2, QTableWidgetItem(str(listk.date_vypoln)))
