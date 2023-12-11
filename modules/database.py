@@ -249,6 +249,8 @@ class Database:
         query_values = [check.name_check, check.period, check.last_check, check.id_check]
         self.query_wp(query_text, query_values)
 
+
+
     def load_all_checks(self):
         result = []
         query = self.query_wp(f"SELECT * FROM checks")
