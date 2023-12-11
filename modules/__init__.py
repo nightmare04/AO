@@ -6,3 +6,4 @@ from .spec import *
 from .dragdrop import *
 from .type import *
 from .check import *
+from .clickqlabel import *

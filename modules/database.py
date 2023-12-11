@@ -245,7 +245,7 @@ class Database:
         return Check().unpack_check(query.record())
 
     def update_check(self, check: Check):
-        query_text = "UPDATE checks SET name_check=?, period=?, last_check=? WHERE id_check=? VALUES(?, ?, ?, ?)"
+        query_text = "UPDATE checks SET name_check=?, period=?, last_check=? WHERE id_check=?"
         query_values = [check.name_check, check.period, check.last_check, check.id_check]
         self.query_wp(query_text, query_values)
 

@@ -41,8 +41,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.lk_action.triggered.connect(self.list_lk)
         self.ui.checks_setup_action.triggered.connect(self.open_setup_checks)
 
-
-
     def event(self, e):
         if e.type() == QtCore.QEvent.Type.WindowActivate:
             self.fill_table()
@@ -61,10 +59,16 @@ class MainWindow(QtWidgets.QMainWindow):
             last_check = QDate(datetime.strptime(ch.last_check, '%d.%m.%Y'))
             next_check = self.add_period(last_check, ch.period)
             ost = (next_check.toPyDate() - datetime.date(datetime.today())).days + 1
-            label = QLabel(f'Следующая проверка {ch.name_check}: {next_check.toString('dd.MM.yyyy')}, осталось {ost} дней')
+            label = ClickQlabel(f'Следующая проверка {ch.name_check}: {next_check.toString('dd.MM.yyyy')}, осталось {ost} дней')
             label.check = ch
-            
+            label.clicked.connect(self.open_edit_check)
             self.checks_layout.addWidget(label)
+
+    def open_edit_check(self):
+        sender = self.sender()
+        check = sender.check
+        self.new_form = EditCheck(check)
+        self.new_form.show()
 
     def clear_layout(self):
         while self.checks_layout.count():
@@ -86,8 +90,6 @@ class MainWindow(QtWidgets.QMainWindow):
         if period == 'год':
             next_check = date.addMonths(12)
             return next_check
-
-
 
     def list_lk(self):
         self.new_form = Listlk()
@@ -1197,13 +1199,14 @@ class EditCheck(AddCheck):
         self.last_check_date.setDate(datetime.strptime(ch.last_check, '%d.%m.%Y'))
 
     def save_check(self):
-        self.check.pack_check()
+        self.check.pack_check(self)
         db.update_check(self.check)
         self.close()
 
     def delete_check(self):
         db.delete_check(self.check)
         self.close()
+
 
 def except_hook(cls, exception, traceback):
     sys.__excepthook__(cls, exception, traceback)

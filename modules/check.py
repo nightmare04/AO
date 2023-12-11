@@ -16,7 +16,7 @@ class Check:
         self.last_check = check.value('last_check')
         return self
 
-    def pack_check(self, form: AddCheck):
+    def pack_check(self, form):
         self.name_check = form.name_line_edit.text()
         self.period = form.period_combobox.currentText()
         self.last_check = form.last_check_date.date().toString('dd.MM.yyyy')
