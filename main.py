@@ -59,7 +59,8 @@ class MainWindow(QtWidgets.QMainWindow):
             last_check = QDate(datetime.strptime(ch.last_check, '%d.%m.%Y'))
             next_check = self.add_period(last_check, ch.period)
             ost = (next_check.toPyDate() - datetime.date(datetime.today())).days + 1
-            label = ClickQlabel(f'Следующая проверка {ch.name_check}: {next_check.toString('dd.MM.yyyy')}, осталось {ost} дней')
+            label = ClickQlabel(f'Следующая проверка {ch.name_check}: {next_check.toString('dd.MM.yyyy')}, '
+                                f'осталось {ost} дней')
             label.check = ch
             label.clicked.connect(self.open_edit_check)
             self.checks_layout.addWidget(label)
