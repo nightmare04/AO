@@ -67,8 +67,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def open_edit_check(self):
         sender = self.sender()
-        check = sender.check
-        self.new_form = EditCheck(check)
+        ch = sender.check
+        self.new_form = EditCheck(ch)
         self.new_form.show()
 
     def clear_layout(self):
@@ -76,7 +76,6 @@ class MainWindow(QtWidgets.QMainWindow):
             item = self.checks_layout.takeAt(0)
             widget = item.widget()
             self.checks_layout.removeWidget(widget)
-
 
     @staticmethod
     def add_period(date: QDate, period: 'str') -> QDate:
