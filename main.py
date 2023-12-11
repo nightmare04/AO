@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import (QGridLayout, QTableWidget, QTableWidgetItem, QPushButton, QGroupBox,
                              QHBoxLayout, QVBoxLayout, QLabel, QLineEdit, QComboBox, QCheckBox,
-                             QDateEdit, QWidgetAction)
+                             QDateEdit, QWidgetAction, QLayoutItem)
 from PyQt6.QtCore import QDate
 from PyQt6.QtGui import QColor
 from ui import *
@@ -16,18 +16,21 @@ import ctypes
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
+        db.create_connection()
         myappid = 'mycompany.myproduct.subproduct.version'
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.new_form = None
         self.lks = []
-        db.create_connection()
         self.setWindowTitle("Старший инженер по специальности")
 
+        self.checks = []
+
+        self.checks_layout = QVBoxLayout()
+        self.ui.checks_groupbox.setLayout(self.checks_layout)
+
         self.init_table()
-        self.fill_table()
-        self.fill_checks()
         self.show()
 
         self.ui.add_btn.clicked.connect(self.add_form)
@@ -38,16 +41,54 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.lk_action.triggered.connect(self.list_lk)
         self.ui.checks_setup_action.triggered.connect(self.open_setup_checks)
 
+
+
     def event(self, e):
         if e.type() == QtCore.QEvent.Type.WindowActivate:
             self.fill_table()
+            self.fill_checks()
         return QtWidgets.QWidget.event(self, e)
 
     def open_setup_checks(self):
         self.new_form = Checks()
         self.new_form.show()
+
     def fill_checks(self):
-        pass
+        self.checks = db.load_all_checks()
+        self.clear_layout()
+
+        for ch in self.checks:
+            last_check = QDate(datetime.strptime(ch.last_check, '%d.%m.%Y'))
+            next_check = self.add_period(last_check, ch.period)
+            ost = (next_check.toPyDate() - datetime.date(datetime.today())).days + 1
+            label = QLabel(f'Следующая проверка {ch.name_check}: {next_check.toString('dd.MM.yyyy')}, осталось {ost} дней')
+            label.check = ch
+            
+            self.checks_layout.addWidget(label)
+
+    def clear_layout(self):
+        while self.checks_layout.count():
+            item = self.checks_layout.takeAt(0)
+            widget = item.widget()
+            self.checks_layout.removeWidget(widget)
+
+
+    @staticmethod
+    def add_period(date: QDate, period: 'str') -> QDate:
+        if period == 'месяц':
+            next_check = date.addMonths(1)
+            return next_check
+
+        if period == 'квартал':
+            next_check = date.addMonths(3)
+            return next_check
+
+        if period == 'год':
+            next_check = date.addMonths(12)
+            return next_check
+
+
+
     def list_lk(self):
         self.new_form = Listlk()
         self.new_form.show()
@@ -1064,26 +1105,30 @@ class Checks(QtWidgets.QWidget):
         self.add_btn.clicked.connect(self.open_add_form)
         self.main_layout.addWidget(self.add_btn)
 
-        self.all_checks = db.load_all_checks()
+        self.all_checks = []
+        self.fill_table()
 
     def event(self, e):
-        if e.type() == QtCore.QEvent.Type.WindowActivate:
+        if e.type() == QtCore.QEvent.Type.WindowUnblocked:
             self.fill_table()
         return QtWidgets.QWidget.event(self, e)
+
     def open_add_form(self):
         self.new_window = AddCheck()
         self.new_window.show()
 
     def fill_table(self):
+        self.all_checks = db.load_all_checks()
         self.table.setRowCount(len(self.all_checks))
+
         row = 0
-        for check in self.all_checks:
+        for ch in self.all_checks:
             btn = QPushButton("Изменить")
-            btn.check = check
+            btn.check = ch
             btn.clicked.connect(self.edit_check)
-            self.table.setItem(row, 0, QTableWidgetItem(check.name_check))
-            self.table.setItem(row, 1, QTableWidgetItem(check.period))
-            self.table.setItem(row, 2, QTableWidgetItem(check.last_check))
+            self.table.setItem(row, 0, QTableWidgetItem(ch.name_check))
+            self.table.setItem(row, 1, QTableWidgetItem(ch.period))
+            self.table.setItem(row, 2, QTableWidgetItem(ch.last_check))
             self.table.setCellWidget(row, 3, btn)
 
             row += 1
@@ -1092,7 +1137,6 @@ class Checks(QtWidgets.QWidget):
         btn = self.sender()
         self.new_window = EditCheck(btn.check)
         self.new_window.show()
-
 
 
 class AddCheck(QtWidgets.QWidget):
@@ -1109,7 +1153,7 @@ class AddCheck(QtWidgets.QWidget):
         self.name_label = QLabel("Название:")
         self.name_line_edit = QLineEdit()
         self.main_layout.addWidget(self.name_label, 0, 0)
-        self.main_layout.addWidget(self.name_line_edit, 0 ,1)
+        self.main_layout.addWidget(self.name_line_edit, 0, 1)
 
         self.period_label = QLabel("Периодичность:")
         self.period_combobox = QComboBox()
@@ -1138,13 +1182,28 @@ class AddCheck(QtWidgets.QWidget):
 
 
 class EditCheck(AddCheck):
-    def __init__(self, check):
+    def __init__(self, ch):
         super().__init__()
+        self.check = ch
+        self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
         self.setWindowTitle("Изменить проверку")
-        self.name_line_edit.setText(check.name_check)
-        self.period_combobox.setCurrentText(check.period)
-        self.last_check_date.setDate(datetime.strptime(check.last_check, '%d.%m.%Y'))
+        self.name_line_edit.setText(ch.name_check)
+        self.period_combobox.setCurrentText(ch.period)
+        self.save_btn.clicked.disconnect()
+        self.save_btn.clicked.connect(self.save_check)
+        self.cancel_btn.setText('Удалить')
+        self.cancel_btn.clicked.disconnect()
+        self.cancel_btn.clicked.connect(self.delete_check)
+        self.last_check_date.setDate(datetime.strptime(ch.last_check, '%d.%m.%Y'))
 
+    def save_check(self):
+        self.check.pack_check()
+        db.update_check(self.check)
+        self.close()
+
+    def delete_check(self):
+        db.delete_check(self.check)
+        self.close()
 
 def except_hook(cls, exception, traceback):
     sys.__excepthook__(cls, exception, traceback)

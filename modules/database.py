@@ -244,6 +244,11 @@ class Database:
         query.first()
         return Check().unpack_check(query.record())
 
+    def update_check(self, check: Check):
+        query_text = "UPDATE checks SET name_check=?, period=?, last_check=? WHERE id_check=? VALUES(?, ?, ?, ?)"
+        query_values = [check.name_check, check.period, check.last_check, check.id_check]
+        self.query_wp(query_text, query_values)
+
     def load_all_checks(self):
         result = []
         query = self.query_wp(f"SELECT * FROM checks")
@@ -254,5 +259,5 @@ class Database:
         return result
 
     def delete_check(self, check: Check):
-        self.query_wp("DELETE FROM checks WHERE id_check=?", [check.id_check])
-        self.query_wp("DELETE FROM checks_date WHERE id_check=?", [check.id_check])
+        self.query_wp(f"DELETE FROM checks WHERE id_check={check.id_check}")
+        self.query_wp(f"DELETE FROM checks_date WHERE id_check={check.id_check}")
