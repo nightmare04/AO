@@ -1,24 +1,21 @@
-from PyQt6.QtWidgets import (QGridLayout, QTableWidget, QTableWidgetItem, QPushButton, QGroupBox,
-                             QHBoxLayout, QVBoxLayout, QLabel, QLineEdit, QComboBox, QCheckBox,
-                             QDateEdit, QWidgetAction, QLayoutItem)
+from PyQt6.QtWidgets import (QGridLayout, QTableWidget, QTableWidgetItem,
+                             QVBoxLayout, QLabel, QLineEdit, QComboBox, QCheckBox,
+                             QDateEdit)
 from PyQt6.QtCore import QDate
 from PyQt6.QtGui import QColor
 from ui import *
 from modules import *
 from datetime import datetime
-from collections import namedtuple
 from docxtpl import DocxTemplate
-import json
 import os
-import ctypes
 
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
         db.create_connection()
-        myappid = 'mycompany.myproduct.subproduct.version'
-        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+        # myappid = 'mycompany.myproduct.subproduct.version'
+        # ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.new_form = None
