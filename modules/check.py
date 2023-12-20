@@ -1,7 +1,5 @@
 from dataclasses import dataclass
 from PyQt6.QtSql import QSqlRecord
-from main import AddCheck
-
 @dataclass
 class Check:
     id_check: str = ''

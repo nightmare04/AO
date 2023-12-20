@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 
 from PyQt6.QtSql import QSqlRecord
-from main import AddType
 
 
 @dataclass

@@ -1,10 +1,10 @@
 from PyQt6.QtWidgets import (QGridLayout, QTableWidget, QTableWidgetItem,
                              QVBoxLayout, QLabel, QLineEdit, QComboBox, QCheckBox,
-                             QDateEdit)
+                             QDateEdit, QPushButton, QGroupBox, QHBoxLayout)
 from PyQt6.QtCore import QDate
 from PyQt6.QtGui import QColor
+from modules import LK, DragButton, DragGroupbox, Podr, Spec, Type, Plane, Check, Database, ClickQlabel
 from ui import *
-from modules import *
 from datetime import datetime
 from docxtpl import DocxTemplate
 import os
@@ -13,13 +13,14 @@ import os
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
-        db.create_connection()
         # myappid = 'mycompany.myproduct.subproduct.version'
         # ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.new_form = None
         self.lks = []
+        self.db = Database()
+        self.db.create_connection()
         self.setWindowTitle("Старший инженер по специальности")
 
         self.checks = []
@@ -49,7 +50,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.new_form.show()
 
     def fill_checks(self):
-        self.checks = db.load_all_checks()
+        self.checks = self.db.load_all_checks()
         self.clear_layout()
 
         for ch in self.checks:
@@ -127,13 +128,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.tableWidget.setSortingEnabled(True)
 
     def open_complete_form(self, row):
-        listk = db.load_lk(self.ui.tableWidget.item(row, 0).text())
+        listk = main.db.load_lk(self.ui.tableWidget.item(row, 0).text())
         self.new_form = Complete(listk)
         self.new_form.show()
 
     def fill_table(self):
         """Заполняем таблицу долгами"""
-        self.lks = db.load_all_uncomplete_lk()
+        self.lks = main.db.load_all_uncomplete_lk()
         self.ui.tableWidget.setRowCount(len(self.lks))
         row = 0
         for listk in self.lks:
@@ -160,7 +161,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     @staticmethod
     def calc_nevyp(listk) -> str:
-        done, not_done = db.get_not_done_planes(listk)
+        done, not_done = main.db.get_not_done_planes(listk)
         if len(not_done) == 0:
             return "Выполнено на всех!"
         else:
@@ -215,7 +216,7 @@ class AddLk(QtWidgets.QWidget):
         group_layout.addWidget(podr_groupbox)
         podr_groupbox_layout = QGridLayout()
         podr_groupbox.setLayout(podr_groupbox_layout)
-        podrs = db.load_all_podr()
+        podrs = main.db.load_all_podr()
 
         row = 0
         col = 0
@@ -239,7 +240,7 @@ class AddLk(QtWidgets.QWidget):
         group_layout.addWidget(type_groupbox)
         type_groupbox_layout = QGridLayout()
         type_groupbox.setLayout(type_groupbox_layout)
-        types = db.load_all_type()
+        types = main.db.load_all_type()
 
         row = 0
         col = 0
@@ -284,7 +285,7 @@ class AddLk(QtWidgets.QWidget):
                     btn.setChecked(False)
 
     def fill_planes(self):
-        for pl in db.load_all_planes():
+        for pl in main.db.load_all_planes():
             btn = DragButton(text=str(pl.bort_num))
             btn.setFixedWidth(30)
             btn.setCheckable(True)
@@ -292,7 +293,7 @@ class AddLk(QtWidgets.QWidget):
             self.plane_btns.append(btn)
 
     def fill_planes_to_podr(self):
-        all_podr = db.load_all_podr()
+        all_podr = main.db.load_all_podr()
         for p in all_podr:
             row = 0
             col = 0
@@ -349,7 +350,7 @@ class AddLk(QtWidgets.QWidget):
 
     def init_spec(self):
         """Готовим специальности"""
-        all_spec = db.load_all_spec()
+        all_spec = main.db.load_all_spec()
         groupbox = QGroupBox("Специальности")
         layout_spec = QHBoxLayout()
         groupbox.setLayout(layout_spec)
@@ -365,7 +366,7 @@ class AddLk(QtWidgets.QWidget):
         """Добавляем лист контроля в базу данных"""
         data = LK()
         data.pack_lk(self)
-        db.add_lk(data)
+        main.db.add_lk(data)
         self.close()
 
 
@@ -388,7 +389,7 @@ class EditLK(AddLk):
 
     def fill_planes(self):
         for id_plane, id_podr in self.lk.planes.items():
-            p = db.load_plane(id_plane)
+            p = main.db.load_plane(id_plane)
             p.id_podr = id_podr
             btn = DragButton(text=str(p.bort_num))
             btn.setFixedWidth(30)
@@ -421,11 +422,11 @@ class EditLK(AddLk):
     def save_lk(self):
         listk = LK()
         listk.pack_lk(self)
-        db.update_lk(listk)
+        main.db.update_lk(listk)
         self.close()
 
     def delete_lk(self):
-        db.delete_lk(self.lk)
+        main.db.delete_lk(self.lk)
         self.close()
 
 
@@ -450,7 +451,7 @@ class Complete(QtWidgets.QWidget):
 
     def init_planes(self):
         for id_plane, id_podr in self.lk.planes.items():
-            pl = db.load_plane(id_plane)
+            pl = main.db.load_plane(id_plane)
             pl.id_podr = id_podr
             btn = QPushButton(str(pl.bort_num))
             btn.setFixedWidth(40)
@@ -459,7 +460,7 @@ class Complete(QtWidgets.QWidget):
             btn.setChecked(True)
             self.plane_btns.append(btn)
 
-        all_podr = db.load_all_podr()
+        all_podr = main.db.load_all_podr()
         for p in all_podr:
             groupbox = QGroupBox(p.name_podr)
             layout_planes = QGridLayout()
@@ -495,7 +496,7 @@ class Complete(QtWidgets.QWidget):
 
     def check_complete(self):
         for btn in self.plane_btns:
-            if len(db.get_complete(self.lk, btn.plane)) == len(self.lk.komu_spec):
+            if len(main.db.get_complete(self.lk, btn.plane)) == len(self.lk.komu_spec):
                 btn.setStyleSheet("background-color: green; color: white;")
 
             else:
@@ -521,7 +522,7 @@ class Complete(QtWidgets.QWidget):
         if not self.ui.otvet_linedit.text() == "":
             self.lk.otvet = self.ui.otvet_linedit.text()
             self.lk.date_otvet = self.ui.otvet_dateedit.date().toString('dd.MM.yyyy')
-        db.update_lk(self.lk)
+        main.db.update_lk(self.lk)
         self.close()
 
     def open_plane_complete(self):
@@ -533,14 +534,14 @@ class Complete(QtWidgets.QWidget):
 class EditComplete(QtWidgets.QWidget):
     def __init__(self, pl, listk, parent=None):
         super().__init__(parent)
-        self.compl = db.get_complete(listk, pl)
+        self.compl = main.db.get_complete(listk, pl)
         self.lk = listk
         self.plane = pl
         self.resize(250, 200)
         self.setWindowTitle(f'Самолет №{self.plane.bort_num}')
         self.main_layout = QVBoxLayout()
         self.setLayout(self.main_layout)
-        self.specs = db.load_all_spec()
+        self.specs = main.db.load_all_spec()
         self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
         for sp in self.specs:
             btn = QPushButton(sp.name_spec)
@@ -556,9 +557,9 @@ class EditComplete(QtWidgets.QWidget):
     def handle_spec(self):
         sender = self.sender()
         if sender.isChecked():
-            db.add_complete(self.lk, self.plane, sender.spec)
+            main.db.add_complete(self.lk, self.plane, sender.spec)
         else:
-            db.del_complete(self.lk, self.plane, sender.spec)
+            main.db.del_complete(self.lk, self.plane, sender.spec)
 
 
 class SetupPodr(QtWidgets.QWidget):
@@ -595,7 +596,7 @@ class SetupPodr(QtWidgets.QWidget):
         self.table.hideColumn(0)
 
     def fill_table(self):
-        podrs = db.load_all_podr()
+        podrs = main.db.load_all_podr()
         self.table.setRowCount(len(podrs))
         row = 0
         for p in podrs:
@@ -643,7 +644,7 @@ class AddPodr(QtWidgets.QWidget):
 
     def add_podr(self):
         self.podr.pack_podr(self)
-        db.add_podr(self.podr)
+        main.db.add_podr(self.podr)
         self.close()
 
 
@@ -669,11 +670,11 @@ class EditPodr(AddPodr):
 
     def save_podr(self):
         self.podr.pack_podr(self)
-        db.update_podr(self.podr)
+        main.db.update_podr(self.podr)
         self.close()
 
     def del_podr(self):
-        db.delete_podr(self.podr.id_podr)
+        main.db.delete_podr(self.podr.id_podr)
         self.close()
 
 
@@ -710,7 +711,7 @@ class SetupSpec(QtWidgets.QWidget):
         self.table.hideColumn(0)
 
     def fill_table(self):
-        specs = db.load_all_spec()
+        specs = main.db.load_all_spec()
         self.table.setRowCount(len(specs))
         row = 0
         for s in specs:
@@ -753,7 +754,7 @@ class AddSpec(QtWidgets.QWidget):
 
     def add_spec(self):
         self.spec.pack_spec(self)
-        db.add_spec(self.spec)
+        main.db.add_spec(self.spec)
         self.close()
 
 
@@ -774,11 +775,11 @@ class EditSpec(AddSpec):
 
     def save_spec(self):
         self.spec.pack_spec(self)
-        db.update_spec(self.spec)
+        main.db.update_spec(self.spec)
         self.close()
 
     def del_spec(self):
-        db.delete_spec(self.spec.id_spec)
+        main.db.delete_spec(self.spec.id_spec)
         self.close()
 
 
@@ -815,7 +816,7 @@ class SetupType(QtWidgets.QWidget):
         self.table.hideColumn(0)
 
     def fill_table(self):
-        types = db.load_all_type()
+        types = main.db.load_all_type()
         self.table.setRowCount(len(types))
         row = 0
         for t in types:
@@ -856,7 +857,7 @@ class AddType(QtWidgets.QWidget):
 
     def add_type(self):
         self.type.pack_type(self)
-        db.add_type(self.type)
+        main.db.add_type(self.type)
         self.close()
 
 
@@ -877,11 +878,11 @@ class EditType(AddType):
 
     def save_type(self):
         self.type.pack_type(self)
-        db.update_type(self.type)
+        main.db.update_type(self.type)
         self.close()
 
     def del_type(self):
-        db.delete_type(self.type.id_type)
+        main.db.delete_type(self.type.id_type)
         self.close()
 
 
@@ -918,7 +919,7 @@ class SetupPlane(QtWidgets.QWidget):
         self.table.setHorizontalHeaderLabels(('Тип', 'Бортовой номер', 'Заводской номер', ''))
 
     def fill_table(self):
-        planes = db.load_all_planes_table()
+        planes = main.db.load_all_planes_table()
         self.table.setRowCount(len(planes))
         row = 0
         for p in planes:
@@ -981,7 +982,7 @@ class AddPlane(QtWidgets.QWidget):
         self.main_layout.addWidget(self.add_btn, 4, 0, 1, 2)
 
     def add_podr_combo(self):
-        podrs = db.load_all_podr()
+        podrs = main.db.load_all_podr()
         res_podr = []
         for p in podrs:
             self.podrs[p.name_podr] = p.id_podr
@@ -989,7 +990,7 @@ class AddPlane(QtWidgets.QWidget):
         self.podr_select.addItems(res_podr)
 
     def add_types_combo(self):
-        types = db.load_all_type()
+        types = main.db.load_all_type()
         res_type = []
         for t in types:
             self.types[t.name_type] = t.id_type
@@ -998,7 +999,7 @@ class AddPlane(QtWidgets.QWidget):
 
     def add_plane(self):
         self.plane.pack_plane(self)
-        db.add_plane(self.plane)
+        main.db.add_plane(self.plane)
         self.close()
 
 
@@ -1026,11 +1027,11 @@ class EditPlane(AddPlane):
 
     def save_plane(self):
         self.plane.pack_plane(self)
-        db.update_plane(self.type)
+        main.db.update_plane(self.type)
         self.close()
 
     def del_plane(self):
-        db.delete_type(self.type.id_type)
+        main.db.delete_type(self.type.id_type)
         self.close()
 
 
@@ -1056,7 +1057,7 @@ class Listlk(QtWidgets.QWidget):
             ""
         ])
 
-        self.lks = db.load_all_lk()
+        self.lks = main.db.load_all_lk()
         self.fill_table()
 
     def fill_table(self):
@@ -1117,7 +1118,7 @@ class Checks(QtWidgets.QWidget):
         self.new_window.show()
 
     def fill_table(self):
-        self.all_checks = db.load_all_checks()
+        self.all_checks = main.db.load_all_checks()
         self.table.setRowCount(len(self.all_checks))
 
         row = 0
@@ -1176,7 +1177,7 @@ class AddCheck(QtWidgets.QWidget):
 
     def save_check(self):
         self.check.pack_check(self)
-        db.add_check(self.check)
+        main.db.add_check(self.check)
         self.close()
 
 
@@ -1197,11 +1198,11 @@ class EditCheck(AddCheck):
 
     def save_check(self):
         self.check.pack_check(self)
-        db.update_check(self.check)
+        main.db.update_check(self.check)
         self.close()
 
     def delete_check(self):
-        db.delete_check(self.check)
+        main.db.delete_check(self.check)
         self.close()
 
 
@@ -1215,6 +1216,6 @@ if __name__ == '__main__':
     sys.excepthook = except_hook
     app = QtWidgets.QApplication(sys.argv)
     app.setWindowIcon(QtGui.QIcon('ui/main.ico'))
-    db = Database()
     main = MainWindow()
+    main.db = Database()
     sys.exit(app.exec())

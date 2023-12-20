@@ -1,7 +1,6 @@
 import json
 from dataclasses import dataclass, field
 from PyQt6.QtSql import QSqlRecord
-from main import AddLk
 from modules.dragdrop import DragButton
 from datetime import datetime
 
@@ -52,7 +51,7 @@ class LK:
         return self
 
     @staticmethod
-    def pack_komu_planes(form: AddLk) -> list:
+    def pack_komu_planes(form) -> list:
         result = []
         for btn in form.plane_btns:
             if btn.isChecked():
@@ -60,7 +59,7 @@ class LK:
         return result
 
     @staticmethod
-    def pack_komu_spec(form: AddLk) -> list:
+    def pack_komu_spec(form) -> list:
         result = []
         for btn in form.spec_btns:
             if btn.isChecked():
@@ -68,7 +67,7 @@ class LK:
         return result
 
     @staticmethod
-    def pack_planes(form: AddLk) -> dict:
+    def pack_planes(form) -> dict:
         result = {}
         for btn in form.findChildren(DragButton):
             result[btn.plane.id_plane] = btn.plane.id_podr

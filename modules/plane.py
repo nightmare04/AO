@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from PyQt6.QtSql import QSqlRecord
-from main import AddPlane
 
 
 @dataclass
@@ -19,7 +18,7 @@ class Plane:
         self.bort_num = str(record.value('bort_num'))
         return self
 
-    def pack_plane(self, form: AddPlane):
+    def pack_plane(self, form):
         self.id_plane = form.plane.id_plane
         self.id_podr = form.podrs[form.podr_select.currentText()]
         self.id_type = form.types[form.type_select.currentText()]

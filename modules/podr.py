@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from PyQt6.QtSql import QSqlRecord
-from main import AddPodr
+
 
 
 @dataclass
@@ -16,7 +16,7 @@ class Podr:
         self.with_planes = record.value('with_planes')
         return self
 
-    def pack_podr(self, form: AddPodr):
+    def pack_podr(self, form):
         self.id_podr = form.podr.id_podr
         self.name_podr = form.name_edit.text()
         self.with_planes = int(form.with_planes.isChecked())
