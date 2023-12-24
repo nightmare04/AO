@@ -14,5 +14,4 @@ if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
     app.setWindowIcon(QtGui.QIcon('ui/main.ico'))
     main = MainWindow()
-    main.db = Database()
     sys.exit(app.exec())

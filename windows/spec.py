@@ -1,8 +1,10 @@
 from PyQt6 import QtWidgets
 
+
 class SetupSpec(QtWidgets.QWidget):
-    def __init__(self):
+    def __init__(self, db):
         super().__init__()
+        self.db = db
         self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
         self.add_form = None
         self.change_form = None
@@ -33,7 +35,7 @@ class SetupSpec(QtWidgets.QWidget):
         self.table.hideColumn(0)
 
     def fill_table(self):
-        specs = main.db.load_all_spec()
+        specs = self.db.load_all_spec()
         self.table.setRowCount(len(specs))
         row = 0
         for s in specs:
@@ -54,9 +56,11 @@ class SetupSpec(QtWidgets.QWidget):
         self.change_form = EditSpec(sender.spec)
         self.change_form.show()
 
+
 class AddSpec(QtWidgets.QWidget):
-    def __init__(self):
+    def __init__(self, db):
         super().__init__()
+        self.db = db
         self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
         self.spec = Spec()
         self.main_layout = QGridLayout()
@@ -75,12 +79,12 @@ class AddSpec(QtWidgets.QWidget):
 
     def add_spec(self):
         self.spec.pack_spec(self)
-        main.db.add_spec(self.spec)
+        self.db.add_spec(self.spec)
         self.close()
 
 class EditSpec(AddSpec):
-    def __init__(self, s):
-        super().__init__()
+    def __init__(self, s, db):
+        super().__init__(db)
         self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
         self.setWindowTitle('Изменить специальность')
         self.add_btn.setText('Сохранить')
@@ -95,9 +99,9 @@ class EditSpec(AddSpec):
 
     def save_spec(self):
         self.spec.pack_spec(self)
-        main.db.update_spec(self.spec)
+        self.db.update_spec(self.spec)
         self.close()
 
     def del_spec(self):
-        main.db.delete_spec(self.spec.id_spec)
+        self.db.delete_spec(self.spec.id_spec)
         self.close()

@@ -245,7 +245,7 @@ class EditLK(AddLk):
     def save_lk(self):
         listk = LK()
         listk.pack_lk(self)
-        main.db.update_lk(listk)
+        self.db.update_lk(listk)
         self.close()
 
     def delete_lk(self):

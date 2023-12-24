@@ -1,8 +1,11 @@
-from PyQt6 import QtWidgets
+from PyQt6 import QtWidgets, QtCore
+from modules import Plane
+
 
 class SetupPlane(QtWidgets.QWidget):
-    def __init__(self):
+    def __init__(self, db):
         super().__init__()
+        self.db = db
         self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
         self.resize(500, 500)
         self.add_form = None
@@ -33,70 +36,71 @@ class SetupPlane(QtWidgets.QWidget):
         self.table.setHorizontalHeaderLabels(('Тип', 'Бортовой номер', 'Заводской номер', ''))
 
     def fill_table(self):
-        planes = main.db.load_all_planes_table()
+        planes = self.db.load_all_planes_table()
         self.table.setRowCount(len(planes))
         row = 0
         for p in planes:
-            btn = QPushButton('Изменить')
+            btn = QtWidgets.QPushButton('Изменить')
             btn.clicked.connect(self.open_change_plane)
             btn.plane = p
-            self.table.setItem(row, 0, QTableWidgetItem(str(p.value(1))))
-            self.table.setItem(row, 1, QTableWidgetItem(str(p.value(2))))
-            self.table.setItem(row, 2, QTableWidgetItem(str(p.value(3))))
+            self.table.setItem(row, 0, QtWidgets.QTableWidgetItem(str(p.value(1))))
+            self.table.setItem(row, 1, QtWidgets.QTableWidgetItem(str(p.value(2))))
+            self.table.setItem(row, 2, QtWidgets.QTableWidgetItem(str(p.value(3))))
             self.table.setCellWidget(row, 3, btn)
 
             row += 1
 
     def open_add_plane(self):
-        self.add_form = AddPlane()
+        self.add_form = AddPlane(self.db)
         self.add_form.show()
 
     def open_change_plane(self):
         sender = self.sender()
-        self.change_form = EditPlane(sender.plane)
+        self.change_form = EditPlane(sender.plane, self.db)
         self.change_form.show()
 
 
 class AddPlane(QtWidgets.QWidget):
-    def __init__(self):
+    def __init__(self, db):
         super().__init__()
+        self.db = db
         self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
         self.plane = Plane()
         self.types = {}
         self.podrs = {}
-        self.main_layout = QGridLayout()
+        self.main_layout = QtWidgets.QGridLayout()
         self.setLayout(self.main_layout)
         self.setWindowTitle(f'Добавить самолет')
         self.resize(300, 100)
 
-        self.label = QLabel('Выберите тип:')
-        self.type_select = QComboBox()
+        self.label = QtWidgets.QLabel('Выберите тип:')
+        self.type_select = QtWidgets.QComboBox()
         self.add_types_combo()
         self.main_layout.addWidget(self.label, 0, 0)
         self.main_layout.addWidget(self.type_select, 0, 1)
 
-        self.label = QLabel('Выберите подразделение:')
-        self.podr_select = QComboBox()
+        self.label = QtWidgets.QLabel('Выберите подразделение:')
+        self.podr_select = QtWidgets.QComboBox()
         self.add_podr_combo()
         self.main_layout.addWidget(self.label, 1, 0)
         self.main_layout.addWidget(self.podr_select, 1, 1)
 
-        self.label = QLabel('Бортовой номер:')
-        self.bort_num_edit = QLineEdit()
+        self.label = QtWidgets.QLabel('Бортовой номер:')
+        self.bort_num_edit = QtWidgets.QLineEdit()
         self.main_layout.addWidget(self.label, 2, 0)
         self.main_layout.addWidget(self.bort_num_edit, 2, 1)
 
-        self.label = QLabel('Заводской номер:')
-        self.zav_num_edit = QLineEdit()
+        self.label = QtWidgets.QLabel('Заводской номер:')
+        self.zav_num_edit = QtWidgets.QLineEdit()
         self.main_layout.addWidget(self.label, 3, 0)
         self.main_layout.addWidget(self.zav_num_edit, 3, 1)
 
-        self.add_btn = QPushButton('Добавить')
+        self.add_btn = QtWidgets.QPushButton('Добавить')
         self.add_btn.clicked.connect(self.add_plane)
         self.main_layout.addWidget(self.add_btn, 4, 0, 1, 2)
 
     def add_podr_combo(self):
-        podrs = main.db.load_all_podr()
+        podrs = self.db.load_all_podr()
         res_podr = []
         for p in podrs:
             self.podrs[p.name_podr] = p.id_podr
@@ -104,7 +108,7 @@ class AddPlane(QtWidgets.QWidget):
         self.podr_select.addItems(res_podr)
 
     def add_types_combo(self):
-        types = main.db.load_all_type()
+        types = self.db.load_all_type()
         res_type = []
         for t in types:
             self.types[t.name_type] = t.id_type
@@ -113,13 +117,13 @@ class AddPlane(QtWidgets.QWidget):
 
     def add_plane(self):
         self.plane.pack_plane(self)
-        main.db.add_plane(self.plane)
+        self.db.add_plane(self.plane)
         self.close()
 
 
 class EditPlane(AddPlane):
-    def __init__(self, p):
-        super().__init__()
+    def __init__(self, p, db):
+        super().__init__(db)
         self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
         self.plane = p
         self.setWindowTitle('Изменить самолет')
@@ -128,7 +132,7 @@ class EditPlane(AddPlane):
         self.add_btn.clicked.disconnect()
         self.add_btn.clicked.connect(self.save_plane)
 
-        self.del_btn = QPushButton('Удалить')
+        self.del_btn = QtWidgets.QPushButton('Удалить')
         self.del_btn.clicked.connect(self.del_plane)
         self.main_layout.addWidget(self.del_btn, 5, 0, 1, 2)
 
@@ -141,9 +145,9 @@ class EditPlane(AddPlane):
 
     def save_plane(self):
         self.plane.pack_plane(self)
-        main.db.update_plane(self.type)
+        self.db.update_plane(self.type)
         self.close()
 
     def del_plane(self):
-        main.db.delete_type(self.type.id_type)
+        self.db.delete_type(self.type.id_type)
         self.close()

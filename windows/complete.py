@@ -1,4 +1,8 @@
-from PyQt6 import QtWidgets
+from PyQt6 import QtWidgets, QtCore
+from ui import Ui_CompleteForm
+from docxtpl import DocxTemplate
+from datetime import datetime
+import os
 
 
 class Complete(QtWidgets.QWidget):
@@ -15,6 +19,7 @@ class Complete(QtWidgets.QWidget):
 
         self.ui.create_doc_btn.clicked.connect(self.create_doc)
         self.ui.save_btn.clicked.connect(self.save_lk)
+        self.ui.cancel_btn.clicked.connect(self.close)
 
         self.ui.otvet_dateedit.setDate(QtCore.QDate().currentDate())
         self.setWindowTitle(f"Лист контроля №{str(self.lk.lk)}")
@@ -25,7 +30,7 @@ class Complete(QtWidgets.QWidget):
         for id_plane, id_podr in self.lk.planes.items():
             pl = self.db.load_plane(id_plane)
             pl.id_podr = id_podr
-            btn = QPushButton(str(pl.bort_num))
+            btn = QtWidgets.QPushButton(str(pl.bort_num))
             btn.setFixedWidth(40)
             btn.plane = pl
             btn.clicked.connect(self.open_plane_complete)
@@ -34,8 +39,8 @@ class Complete(QtWidgets.QWidget):
 
         all_podr = self.db.load_all_podr()
         for p in all_podr:
-            groupbox = QGroupBox(p.name_podr)
-            layout_planes = QGridLayout()
+            groupbox = QtWidgets.QGroupBox(p.name_podr)
+            layout_planes = QtWidgets.QGridLayout()
             groupbox.setLayout(layout_planes)
             groupbox.podr = p
             groupbox.plane_btns = []
@@ -99,24 +104,25 @@ class Complete(QtWidgets.QWidget):
 
     def open_plane_complete(self):
         sender = self.sender()
-        self.plane_complete = EditComplete(sender.plane, self.lk)
+        self.plane_complete = EditComplete(sender.plane, self.lk, self.db)
         self.plane_complete.show()
 
 
 class EditComplete(QtWidgets.QWidget):
-    def __init__(self, pl, listk, parent=None):
+    def __init__(self, pl, listk, db, parent=None):
         super().__init__(parent)
+        self.db = db
         self.compl = self.db.get_complete(listk, pl)
         self.lk = listk
         self.plane = pl
         self.resize(250, 200)
         self.setWindowTitle(f'Самолет №{self.plane.bort_num}')
-        self.main_layout = QVBoxLayout()
+        self.main_layout = QtWidgets.QVBoxLayout()
         self.setLayout(self.main_layout)
         self.specs = self.db.load_all_spec()
         self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
         for sp in self.specs:
-            btn = QPushButton(sp.name_spec)
+            btn = QtWidgets.QPushButton(sp.name_spec)
             btn.spec = sp
             btn.setCheckable(True)
             btn.lk = self.lk

@@ -2,6 +2,7 @@ from PyQt6 import QtWidgets, QtCore
 from PyQt6.QtWidgets import QPushButton, QTableWidget, QTableWidgetItem, QGridLayout, QLabel, QLineEdit, QCheckBox
 from modules import Podr
 
+
 class SetupPodr(QtWidgets.QWidget):
     def __init__(self, db):
         super().__init__()
@@ -55,12 +56,14 @@ class SetupPodr(QtWidgets.QWidget):
 
     def open_change_podr(self):
         sender = self.sender()
-        self.change_form = EditPodr(sender.podr)
+        self.change_form = EditPodr(sender.podr, self.db)
         self.change_form.show()
 
+
 class AddPodr(QtWidgets.QWidget):
-    def __init__(self):
+    def __init__(self, db):
         super().__init__()
+        self.db = db
         self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
         self.podr = Podr()
         self.main_layout = QGridLayout()
@@ -84,12 +87,14 @@ class AddPodr(QtWidgets.QWidget):
 
     def add_podr(self):
         self.podr.pack_podr(self)
-        main.db.add_podr(self.podr)
+        self.db.add_podr(self.podr)
         self.close()
 
+
 class EditPodr(AddPodr):
-    def __init__(self, p):
-        super().__init__()
+    def __init__(self, p, db):
+        super().__init__(db)
+        self.db = db
         self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
         self.podr = p
         self.setWindowTitle('Изменить подразделение')
@@ -109,9 +114,9 @@ class EditPodr(AddPodr):
 
     def save_podr(self):
         self.podr.pack_podr(self)
-        main.db.update_podr(self.podr)
+        self.db.update_podr(self.podr)
         self.close()
 
     def del_podr(self):
-        main.db.delete_podr(self.podr.id_podr)
+        self.db.delete_podr(self.podr.id_podr)
         self.close()

@@ -1,10 +1,12 @@
 from PyQt6 import QtWidgets
+from PyQt6.QtWidgets import QVBoxLayout, QTableWidget, QTableWidgetItem, QPushButton
 
 
 class Listlk(QtWidgets.QWidget):
-    def __init__(self, db):
+    def __init__(self, main):
         super().__init__()
-        self.db = db
+        self.main_window = main
+        self.db = main.db
         self.resize(900, 400)
         self.setWindowTitle('Листы контроля')
         self.main_layout = QVBoxLayout()
@@ -34,7 +36,7 @@ class Listlk(QtWidgets.QWidget):
         for listk in self.lks:
             btn = QPushButton("Изменить")
             btn.lk = listk
-            btn.clicked.connect(main.open_edit_form)
+            btn.clicked.connect(self.main_window.open_edit_form)
 
             if listk.complete:
                 complete = "Выполнено"

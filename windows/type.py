@@ -1,8 +1,11 @@
-from PyQt6 import QtWidgets
+from PyQt6 import QtWidgets, QtCore
+from modules import Type
+
 
 class SetupType(QtWidgets.QWidget):
-    def __init__(self):
+    def __init__(self, db):
         super().__init__()
+        self.db = db
         self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
         self.add_form = None
         self.change_form = None
@@ -33,52 +36,55 @@ class SetupType(QtWidgets.QWidget):
         self.table.hideColumn(0)
 
     def fill_table(self):
-        types = main.db.load_all_type()
+        types = self.db.load_all_type()
         self.table.setRowCount(len(types))
         row = 0
         for t in types:
-            btn = QPushButton('Изменить')
+            btn = QtWidgets.QPushButton('Изменить')
             btn.clicked.connect(self.open_change_type)
             btn.type = t
-            self.table.setItem(row, 1, QTableWidgetItem(str(t.name_type)))
+            self.table.setItem(row, 1, QtWidgets.QTableWidgetItem(str(t.name_type)))
             self.table.setCellWidget(row, 2, btn)
 
             row += 1
 
     def open_add_type(self):
-        self.add_form = AddType()
+        self.add_form = AddType(self.db)
         self.add_form.show()
 
     def open_change_type(self):
         sender = self.sender()
-        self.change_form = EditType(sender.type)
+        self.change_form = EditType(sender.type, self.db)
         self.change_form.show()
 
+
 class AddType(QtWidgets.QWidget):
-    def __init__(self):
+    def __init__(self, db):
         super().__init__()
+        self.db = db
         self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
         self.type = Type()
-        self.main_layout = QGridLayout()
+        self.main_layout = QtWidgets.QGridLayout()
         self.setLayout(self.main_layout)
         self.setWindowTitle(f'Добавить тип самолета')
         self.resize(300, 100)
-        self.label = QLabel('Введите тип:')
-        self.name_edit = QLineEdit()
+        self.label = QtWidgets.QLabel('Введите тип:')
+        self.name_edit = QtWidgets.QLineEdit()
         self.main_layout.addWidget(self.label, 0, 0)
         self.main_layout.addWidget(self.name_edit, 0, 1)
-        self.add_btn = QPushButton('Добавить')
+        self.add_btn = QtWidgets.QPushButton('Добавить')
         self.add_btn.clicked.connect(self.add_type)
         self.main_layout.addWidget(self.add_btn, 1, 0, 1, 2)
 
     def add_type(self):
         self.type.pack_type(self)
-        main.db.add_type(self.type)
+        self.db.add_type(self.type)
         self.close()
 
+
 class EditType(AddType):
-    def __init__(self, t):
-        super().__init__()
+    def __init__(self, t, db):
+        super().__init__(db)
         self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
         self.setWindowTitle('Изменить тип самолета')
         self.add_btn.setText('Сохранить')
@@ -87,15 +93,15 @@ class EditType(AddType):
         self.name_edit.setText(str(self.type.name_type))
         self.add_btn.clicked.disconnect()
         self.add_btn.clicked.connect(self.save_type)
-        self.del_btn = QPushButton("Удалить")
+        self.del_btn = QtWidgets.QPushButton("Удалить")
         self.del_btn.clicked.connect(self.del_type)
         self.main_layout.addWidget(self.del_btn, 2, 0, 1, 2)
 
     def save_type(self):
         self.type.pack_type(self)
-        main.db.update_type(self.type)
+        self.db.update_type(self.type)
         self.close()
 
     def del_type(self):
-        main.db.delete_type(self.type.id_type)
+        self.db.delete_type(self.type.id_type)
         self.close()

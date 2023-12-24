@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import QVBoxLayout, QPushButton, QTableWidgetItem, QTableWi
 from ui import Ui_MainWindow
 from modules import Database, ClickQlabel
 from datetime import datetime
-from windows import EditLK, AddLk, SetupPodr, SetupSpec, SetupType, SetupPlane
+from windows import EditLK, AddLk, SetupPodr, SetupSpec, SetupType, SetupPlane, Complete, Listlk
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -88,11 +88,11 @@ class MainWindow(QtWidgets.QMainWindow):
             return next_check
 
     def list_lk(self):
-        self.new_form = Listlk()
+        self.new_form = Listlk(self)
         self.new_form.show()
 
     def open_setup_plane(self):
-        self.new_form = SetupPlane()
+        self.new_form = SetupPlane(self.db)
         self.new_form.show()
 
     def open_setup_podr(self):
@@ -100,11 +100,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self.new_form.show()
 
     def open_setup_type(self):
-        self.new_form = SetupType()
+        self.new_form = SetupType(self.db)
         self.new_form.show()
 
     def open_setup_spec(self):
-        self.new_form = SetupSpec()
+        self.new_form = SetupSpec(self.db)
         self.new_form.show()
 
     def init_table(self):
@@ -126,8 +126,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.tableWidget.setSortingEnabled(True)
 
     def open_complete_form(self, row):
-        listk = main.db.load_lk(self.ui.tableWidget.item(row, 0).text())
-        self.new_form = Complete(listk)
+        listk = self.db.load_lk(self.ui.tableWidget.item(row, 0).text())
+        self.new_form = Complete(listk, self.db)
         self.new_form.show()
 
     def fill_table(self):
