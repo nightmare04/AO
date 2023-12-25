@@ -1,5 +1,4 @@
 from PyQt6 import QtWidgets, QtCore
-from modules import Type
 
 
 class SetupType(QtWidgets.QWidget):

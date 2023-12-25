@@ -1,6 +1,5 @@
 from PyQt6 import QtWidgets, QtCore
 from PyQt6.QtWidgets import QPushButton, QTableWidget, QTableWidgetItem, QGridLayout, QLabel, QLineEdit, QCheckBox
-from modules import Podr
 
 
 class SetupPodr(QtWidgets.QWidget):

@@ -1,5 +1,4 @@
 from PyQt6 import QtWidgets, QtCore
-from modules import Plane
 
 
 class SetupPlane(QtWidgets.QWidget):
@@ -125,7 +124,7 @@ class EditPlane(AddPlane):
     def __init__(self, p, db):
         super().__init__(db)
         self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
-        self.plane = p
+        self.plane = Plane().unpack_plane(p)
         self.setWindowTitle('Изменить самолет')
 
         self.add_btn.setText('Сохранить')
@@ -149,5 +148,5 @@ class EditPlane(AddPlane):
         self.close()
 
     def del_plane(self):
-        self.db.delete_type(self.type.id_type)
+        self.db.delete_plane(self.plane.id_plane)
         self.close()

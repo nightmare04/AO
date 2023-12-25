@@ -3,9 +3,9 @@ from PyQt6.QtCore import QDate
 from PyQt6.QtGui import QColor
 from PyQt6.QtWidgets import QVBoxLayout, QPushButton, QTableWidgetItem, QTableWidget
 from ui import Ui_MainWindow
-from modules import Database, ClickQlabel
+from modules import Database, ClickQlabel, Check
 from datetime import datetime
-from windows import EditLK, AddLk, SetupPodr, SetupSpec, SetupType, SetupPlane, Complete, Listlk
+from windows import EditLK, AddLk, SetupPodr, SetupSpec, SetupType, SetupPlane, Complete, Listlk, Checks
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -13,15 +13,12 @@ class MainWindow(QtWidgets.QMainWindow):
         super().__init__()
         # myappid = 'mycompany.myproduct.subproduct.version'
         # ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+        self.checks = None
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.new_form = None
-        self.lks = []
-        self.db = Database()
-        self.db.create_connection()
         self.setWindowTitle("Старший инженер по специальности")
 
-        self.checks = []
 
         self.checks_layout = QVBoxLayout()
         self.ui.checks_groupbox.setLayout(self.checks_layout)
@@ -48,7 +45,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.new_form.show()
 
     def fill_checks(self):
-        self.checks = self.db.load_all_checks()
+        self.checks = []
+        for check in Check.select():
+            self.checks.append()
         self.clear_layout()
 
         for ch in self.checks:

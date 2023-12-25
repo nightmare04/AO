@@ -1,6 +1,6 @@
 from PyQt6 import QtWidgets, QtCore
 from PyQt6.QtWidgets import QGridLayout, QGroupBox, QHBoxLayout, QPushButton
-from modules import LK, DragGroupbox, DragButton
+from modules import DragGroupbox, DragButton
 from ui import Ui_Add_lk_form
 from datetime import datetime
 
