@@ -2,7 +2,7 @@ from PyQt6 import QtWidgets, QtCore
 from ui import Ui_CompleteForm
 from docxtpl import DocxTemplate
 from datetime import datetime
-from modules import ListControlModel
+from modules import ListControlModel, PlaneModel, UnitModel
 import os
 
 
@@ -11,6 +11,7 @@ class Complete(QtWidgets.QWidget):
         super().__init__()
         self.plane_complete = None
         self.lk = listk
+        self.lk: ListControlModel
         self.podrs = []
         self.plane_btns = []
         self.plane_groups = []
@@ -27,29 +28,28 @@ class Complete(QtWidgets.QWidget):
         self.init_planes()
 
     def init_planes(self):
-        test: ListControlModel
-        for id_plane, id_podr in self.lk.planes_for_exec.items():
-            pl = self.db.load_plane(id_plane)
-            pl.id_podr = id_podr
-            btn = QtWidgets.QPushButton(str(pl.bort_num))
+        for id_plane, id_podr in PlaneModel.select(ListControlModel.planes_for_exec).items():
+            pl = PlaneModel.get(PlaneModel.id == id_plane)
+            pl.unit = id_podr
+            btn = QtWidgets.QPushButton(str(pl.tail_number))
             btn.setFixedWidth(40)
             btn.plane = pl
             btn.clicked.connect(self.open_plane_complete)
             btn.setChecked(True)
             self.plane_btns.append(btn)
 
-        all_podr = self.db.load_all_podr()
-        for p in all_podr:
-            groupbox = QtWidgets.QGroupBox(p.name_podr)
+        all_unit = UnitModel.select()
+        for u in all_unit:
+            groupbox = QtWidgets.QGroupBox(u.name)
             layout_planes = QtWidgets.QGridLayout()
             groupbox.setLayout(layout_planes)
-            groupbox.podr = p
+            groupbox.podr = u
             groupbox.plane_btns = []
 
             row = 0
             col = 0
             for plane_btn in self.plane_btns:
-                if (plane_btn.plane.id_plane in self.lk.komu_planes) and (plane_btn.plane.id_podr == p.id_podr):
+                if (plane_btn.plane.id in self.lk.planes_for_exec) and (plane_btn.plane.id_podr == u.id_podr):
                     if col < 3:
                         layout_planes.addWidget(plane_btn, row, col)
                         col += 1
