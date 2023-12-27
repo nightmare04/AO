@@ -123,8 +123,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.tableWidget.setSortingEnabled(True)
 
     def open_complete_form(self, row):
-        listk = self.db.load_lk(self.ui.tableWidget.item(row, 0).text())
-        self.new_form = Complete(listk, self.db)
+        listk = ListControlModel.get(ListControlModel.id == self.ui.tableWidget.item(row, 0).text())
+        self.new_form = Complete(listk)
         self.new_form.show()
 
     def fill_table(self):
@@ -138,7 +138,7 @@ class MainWindow(QtWidgets.QMainWindow):
             btn = QPushButton("Изменить")
             btn.lk = listk
             btn.clicked.connect(self.open_edit_form)
-            ost = (listk.date_deadline - datetime.today())
+            ost = (listk.date_deadline - datetime.today().date())
             if ost.days + 1 < 5:
                 ost_wid = QTableWidgetItem(str(ost.days + 1))
                 ost_wid.setBackground(QColor("red"))
@@ -156,14 +156,15 @@ class MainWindow(QtWidgets.QMainWindow):
             row += 1
 
     def calc_nevyp(self, listk) -> str:
-        if len(not_done) == 0:
-            return "Выполнено на всех!"
-        else:
-            text = ''
-            for pl in not_done:
-                text += f'{pl.bort_num} ,'
-
-            return text[:-2]
+        return 'В разработке.'
+        # if len(not_done) == 0:
+        #     return "Выполнено на всех!"
+        # else:
+        #     text = ''
+        #     for pl in not_done:
+        #         text += f'{pl.bort_num} ,'
+        #
+        #     return text[:-2]
 
     def add_form(self):
         """Открываем новую форму добавления листа контроля"""

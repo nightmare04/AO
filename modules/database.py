@@ -15,12 +15,12 @@ class BaseModel(Model):
 class ListControlModel(BaseModel):
     id = PrimaryKeyField(null=False)
     telegram = CharField(max_length=100, null=False)
-    date_telegram = DateField(null=False)
+    date_telegram = DateField()
     date_deadline = DateField()
-    description = TextField()
-    number_lk = CharField(max_length=10)
-    answer_telegram = CharField(max_length=100)
-    date_answer = DateField()
+    description = TextField(null=True)
+    number_lk = CharField(max_length=10, null=True)
+    answer_telegram = CharField(max_length=100, null=True)
+    date_answer = DateField(null=True)
     specialties_for_exec = JSONField()
     planes_for_exec = JSONField()
     planes_on_create = JSONField()
@@ -88,5 +88,11 @@ class CompleteListModel(BaseModel):
 
 def create_tables():
     with db:
-        db.create_tables([PlaneModel, PlaneTypeModel, UnitModel, SubunitModel, ListControlModel, CompleteListModel, CheckModel])
+        db.create_tables(
+            [
+                PlaneModel, PlaneTypeModel, UnitModel,
+                SubunitModel, ListControlModel, CompleteListModel,
+                CheckModel
+            ]
+        )
 

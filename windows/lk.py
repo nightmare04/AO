@@ -191,20 +191,29 @@ class AddLk(QtWidgets.QWidget):
     def add_lk(self):
         """Добавляем лист контроля в базу данных"""
         self.lk.telegram = self.ui.TlgLineEdit.text()
-        self.lk.date_telegram = self.ui.TlgDateEdit.date()
-        self.lk.date_deadline = self.ui.SrokDateEdit.date()
+        self.lk.date_telegram = self.ui.TlgDateEdit.date().toPyDate()
+        self.lk.date_deadline = self.ui.SrokDateEdit.date().toPyDate()
         self.lk.description = self.ui.textEdit.toPlainText()
         self.lk.number_lk = self.ui.LkLineEdit.text()
         self.lk.planes_for_exec = self.pack_planes_for_exec()
         self.lk.specialties_for_exec = self.pack_subunit_to_exec()
-        self.lk.planes_on_create = PlaneModel.select(id)
+        self.lk.planes_on_create = self.pack_planes_on_create()
+        self.lk.save()
         self.close()
+
+    @staticmethod
+    def pack_planes_on_create():
+        result = []
+        for plane in PlaneModel.select():
+            result.append({plane.id: plane.unit})
+
+        return result
 
     def pack_planes_for_exec(self):
         planes_for_exec = []
         for plane_btn in self.plane_btns:
             if plane_btn.isChecked():
-                planes_for_exec.append(plane_btn.plane.id)
+                planes_for_exec.append({plane_btn.plane.id: plane_btn.plane.unit})
 
         return planes_for_exec
 
@@ -214,7 +223,7 @@ class AddLk(QtWidgets.QWidget):
             if subunit_btn.isChecked():
                 subunit.append(subunit_btn.spec.id)
 
-        return subunit
+        return subunitr
 
 
 class EditLK(AddLk):

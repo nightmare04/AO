@@ -2,13 +2,13 @@ from PyQt6 import QtWidgets, QtCore
 from ui import Ui_CompleteForm
 from docxtpl import DocxTemplate
 from datetime import datetime
+from modules import ListControlModel
 import os
 
 
 class Complete(QtWidgets.QWidget):
-    def __init__(self, listk, db):
+    def __init__(self, listk):
         super().__init__()
-        self.db = db
         self.plane_complete = None
         self.lk = listk
         self.podrs = []
@@ -22,12 +22,13 @@ class Complete(QtWidgets.QWidget):
         self.ui.cancel_btn.clicked.connect(self.close)
 
         self.ui.otvet_dateedit.setDate(QtCore.QDate().currentDate())
-        self.setWindowTitle(f"Лист контроля №{str(self.lk.lk)}")
+        self.setWindowTitle(f"Лист контроля №{str(self.lk.number_lk)}")
         self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
         self.init_planes()
 
     def init_planes(self):
-        for id_plane, id_podr in self.lk.planes.items():
+        test: ListControlModel
+        for id_plane, id_podr in self.lk.planes_for_exec.items():
             pl = self.db.load_plane(id_plane)
             pl.id_podr = id_podr
             btn = QtWidgets.QPushButton(str(pl.bort_num))
@@ -67,7 +68,7 @@ class Complete(QtWidgets.QWidget):
             self.ui.otvet_dateedit.setDate(datetime.strptime(str(self.lk.date_otvet), '%d.%m.%Y'))
 
     def event(self, e):
-        if e.plane_type() == QtCore.QEvent.Type.WindowActivate:
+        if e.type() == QtCore.QEvent.Type.WindowActivate:
             self.check_complete()
         return QtWidgets.QWidget.event(self, e)
 
