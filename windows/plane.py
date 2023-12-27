@@ -1,10 +1,10 @@
 from PyQt6 import QtWidgets, QtCore
+from modules import PlaneModel
 
 
 class SetupPlane(QtWidgets.QWidget):
-    def __init__(self, db):
+    def __init__(self):
         super().__init__()
-        self.db = db
         self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
         self.resize(500, 500)
         self.add_form = None
@@ -35,16 +35,16 @@ class SetupPlane(QtWidgets.QWidget):
         self.table.setHorizontalHeaderLabels(('Тип', 'Бортовой номер', 'Заводской номер', ''))
 
     def fill_table(self):
-        planes = self.db.load_all_planes_table()
+        planes = PlaneModel.select()
         self.table.setRowCount(len(planes))
         row = 0
         for p in planes:
             btn = QtWidgets.QPushButton('Изменить')
             btn.clicked.connect(self.open_change_plane)
             btn.plane = p
-            self.table.setItem(row, 0, QtWidgets.QTableWidgetItem(str(p.value(1))))
-            self.table.setItem(row, 1, QtWidgets.QTableWidgetItem(str(p.value(2))))
-            self.table.setItem(row, 2, QtWidgets.QTableWidgetItem(str(p.value(3))))
+            self.table.setItem(row, 0, QtWidgets.QTableWidgetItem())
+            self.table.setItem(row, 1, QtWidgets.QTableWidgetItem())
+            self.table.setItem(row, 2, QtWidgets.QTableWidgetItem())
             self.table.setCellWidget(row, 3, btn)
 
             row += 1

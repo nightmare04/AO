@@ -32,7 +32,7 @@ class Checks(QtWidgets.QWidget):
         self.fill_table()
 
     def event(self, e):
-        if e.type() == QtCore.QEvent.Type.WindowUnblocked:
+        if e == QtCore.QEvent.Type.WindowUnblocked:
             self.fill_table()
         return QtWidgets.QWidget.event(self, e)
 
@@ -94,13 +94,13 @@ class AddCheck(QtWidgets.QWidget):
         self.main_layout.addWidget(self.last_check_date, 2, 1)
 
         self.save_btn = QPushButton("Сохранить")
-        self.save_btn.clicked.connect(self.save_check)
+        self.save_btn.clicked.connect(self.add_check)
         self.cancel_btn = QPushButton("Закрыть")
         self.cancel_btn.clicked.connect(self.close)
         self.main_layout.addWidget(self.save_btn, 3, 0)
         self.main_layout.addWidget(self.cancel_btn, 3, 1)
 
-    def save_check(self):
+    def add_check(self):
         check: CheckModel
         check = CheckModel(
             name=self.name_line_edit.text(),
@@ -125,6 +125,15 @@ class EditCheck(AddCheck):
         self.cancel_btn.clicked.disconnect()
         self.cancel_btn.clicked.connect(self.delete_check)
         self.last_check_date.setDate(ch.last_check)
+
+    def save_check(self):
+        self.check: CheckModel
+        self.check.name = self.name_line_edit.text(),
+        self.check.last_check = self.last_check_date.date().toPyDate(),
+        self.check.period = str(self.period_combobox.currentText())
+
+        self.check.save()
+        self.close()
 
     def delete_check(self):
         self.check.delete()

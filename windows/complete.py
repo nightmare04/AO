@@ -67,7 +67,7 @@ class Complete(QtWidgets.QWidget):
             self.ui.otvet_dateedit.setDate(datetime.strptime(str(self.lk.date_otvet), '%d.%m.%Y'))
 
     def event(self, e):
-        if e.type() == QtCore.QEvent.Type.WindowActivate:
+        if e.plane_type() == QtCore.QEvent.Type.WindowActivate:
             self.check_complete()
         return QtWidgets.QWidget.event(self, e)
 

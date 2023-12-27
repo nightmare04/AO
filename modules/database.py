@@ -47,7 +47,7 @@ class SubunitModel(BaseModel):
         db_table = 'subunits'
 
 
-class PlaneTypesModel(BaseModel):
+class PlaneTypeModel(BaseModel):
     id = PrimaryKeyField(null=False)
     name = CharField(max_length=30)
 
@@ -58,9 +58,9 @@ class PlaneTypesModel(BaseModel):
 class PlaneModel(BaseModel):
     id = PrimaryKeyField(null=False)
     tail_number = CharField(max_length=10)
-    factory_number = CharField(max_length=30)
-    unit = ForeignKeyField(UnitModel, backref='units')
-    plane_type = ForeignKeyField(PlaneTypesModel, backref='plane_types')
+    factory_number = CharField(max_length=30, null=True)
+    unit = ForeignKeyField(UnitModel, backref='units', on_delete='cascade')
+    plane_type = ForeignKeyField(PlaneTypeModel, backref='plane_types', on_delete='cascade')
 
     class Meta:
         db_table = 'planes'
@@ -77,9 +77,9 @@ class CheckModel(BaseModel):
 
 
 class CompleteListModel(BaseModel):
-    id_list = ForeignKeyField(ListControlModel, backref='completes')
-    id_plane = ForeignKeyField(PlaneModel, backref='planes')
-    id_subunit = ForeignKeyField(SubunitModel, backref='subunits')
+    id_list = ForeignKeyField(ListControlModel, backref='completes', on_delete='cascade')
+    id_plane = ForeignKeyField(PlaneModel, backref='planes', on_delete='cascade')
+    id_subunit = ForeignKeyField(SubunitModel, backref='subunits', on_delete='cascade')
 
     class Meta:
         db_table = 'complete_list'
@@ -88,5 +88,5 @@ class CompleteListModel(BaseModel):
 
 def create_tables():
     with db:
-        db.create_tables([PlaneModel, PlaneTypesModel, UnitModel, SubunitModel, ListControlModel, CompleteListModel, CheckModel])
+        db.create_tables([PlaneModel, PlaneTypeModel, UnitModel, SubunitModel, ListControlModel, CompleteListModel, CheckModel])
 
