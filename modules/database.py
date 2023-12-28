@@ -59,8 +59,8 @@ class PlaneModel(BaseModel):
     id = PrimaryKeyField(null=False)
     tail_number = CharField(max_length=10)
     factory_number = CharField(max_length=30, null=True)
-    unit = ForeignKeyField(UnitModel, backref='units', on_delete='cascade')
-    plane_type = ForeignKeyField(PlaneTypeModel, backref='plane_types', on_delete='cascade')
+    unit = ForeignKeyField(UnitModel.id, backref='units', on_delete='cascade')
+    plane_type = ForeignKeyField(PlaneTypeModel.id, backref='plane_types', on_delete='cascade')
 
     class Meta:
         db_table = 'planes'

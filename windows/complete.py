@@ -28,44 +28,55 @@ class Complete(QtWidgets.QWidget):
         self.init_planes()
 
     def init_planes(self):
-        for id_plane, id_podr in PlaneModel.select(ListControlModel.planes_for_exec).items():
-            pl = PlaneModel.get(PlaneModel.id == id_plane)
-            pl.unit = id_podr
-            btn = QtWidgets.QPushButton(str(pl.tail_number))
+        planes_for_exec = self.lk.planes_for_exec
+        for plane in planes_for_exec:
+            btn = QtWidgets.QPushButton()
+            btn.plane = PlaneModel.get(PlaneModel.id == plane.id)
+            btn.setText(btn.plane.tail_number)
             btn.setFixedWidth(40)
-            btn.plane = pl
             btn.clicked.connect(self.open_plane_complete)
             btn.setChecked(True)
             self.plane_btns.append(btn)
 
-        all_unit = UnitModel.select()
-        for u in all_unit:
-            groupbox = QtWidgets.QGroupBox(u.name)
-            layout_planes = QtWidgets.QGridLayout()
-            groupbox.setLayout(layout_planes)
-            groupbox.podr = u
-            groupbox.plane_btns = []
 
-            row = 0
-            col = 0
-            for plane_btn in self.plane_btns:
-                if (plane_btn.plane.id in self.lk.planes_for_exec) and (plane_btn.plane.id_podr == u.id_podr):
-                    if col < 3:
-                        layout_planes.addWidget(plane_btn, row, col)
-                        col += 1
-                    else:
-                        row += 1
-                        col = 0
-                        layout_planes.addWidget(plane_btn, row, col)
-                        col += 1
-
-                self.ui.podr_layout.addWidget(groupbox)
-                self.plane_groups.append(groupbox)
-
-        self.ui.complete_checkbox.setChecked(bool(self.lk.complete))
-        self.ui.otvet_linedit.setText(self.lk.otvet)
-        if not self.lk.date_otvet == '':
-            self.ui.otvet_dateedit.setDate(datetime.strptime(str(self.lk.date_otvet), '%d.%m.%Y'))
+        # for id_plane, id_podr in PlaneModel.select(ListControlModel.planes_for_exec):
+        #     pl = PlaneModel.get(PlaneModel.id == id_plane)
+        #     pl.unit = id_podr
+        #     btn = QtWidgets.QPushButton(str(pl.tail_number))
+        #     btn.setFixedWidth(40)
+        #     btn.plane = pl
+        #     btn.clicked.connect(self.open_plane_complete)
+        #     btn.setChecked(True)
+        #     self.plane_btns.append(btn)
+        #
+        # all_unit = UnitModel.select()
+        # for u in all_unit:
+        #     groupbox = QtWidgets.QGroupBox(u.name)
+        #     layout_planes = QtWidgets.QGridLayout()
+        #     groupbox.setLayout(layout_planes)
+        #     groupbox.podr = u
+        #     groupbox.plane_btns = []
+        #
+        #     row = 0
+        #     col = 0
+        #     for plane_btn in self.plane_btns:
+        #         if (plane_btn.plane.id in self.lk.planes_for_exec) and (plane_btn.plane.id_podr == u.id_podr):
+        #             if col < 3:
+        #                 layout_planes.addWidget(plane_btn, row, col)
+        #                 col += 1
+        #             else:
+        #                 row += 1
+        #                 col = 0
+        #                 layout_planes.addWidget(plane_btn, row, col)
+        #                 col += 1
+        #
+        #         self.ui.podr_layout.addWidget(groupbox)
+        #         self.plane_groups.append(groupbox)
+        #
+        # self.ui.complete_checkbox.setChecked(bool(self.lk.complete))
+        # self.ui.otvet_linedit.setText(self.lk.otvet)
+        # if not self.lk.date_otvet == '':
+        #     self.ui.otvet_dateedit.setDate(datetime.strptime(str(self.lk.date_otvet), '%d.%m.%Y'))
 
     def event(self, e):
         if e.type() == QtCore.QEvent.Type.WindowActivate:

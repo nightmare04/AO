@@ -205,7 +205,8 @@ class AddLk(QtWidgets.QWidget):
     def pack_planes_on_create():
         result = []
         for plane in PlaneModel.select():
-            result.append({plane.id: plane.unit})
+            result.append({'id': str(plane.id),
+                           'unit': str(plane.unit)})
 
         return result
 
@@ -213,7 +214,8 @@ class AddLk(QtWidgets.QWidget):
         planes_for_exec = []
         for plane_btn in self.plane_btns:
             if plane_btn.isChecked():
-                planes_for_exec.append({plane_btn.plane.id: plane_btn.plane.unit})
+                planes_for_exec.append({'id': str(plane_btn.plane.id),
+                                       'unit': str(plane_btn.plane.unit)})
 
         return planes_for_exec
 
@@ -223,7 +225,7 @@ class AddLk(QtWidgets.QWidget):
             if subunit_btn.isChecked():
                 subunit.append(subunit_btn.spec.id)
 
-        return subunitr
+        return subunit
 
 
 class EditLK(AddLk):
