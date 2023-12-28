@@ -3,7 +3,7 @@ from PyQt6.QtCore import QDate
 from PyQt6.QtGui import QColor
 from PyQt6.QtWidgets import QVBoxLayout, QPushButton, QTableWidgetItem, QTableWidget
 from ui import Ui_MainWindow
-from modules import Database, ClickQlabel, CheckModel, ListControlModel
+from modules import Database, ClickQlabel, CheckModel, ListControlModel, CompleteListModel, PlaneModel
 from datetime import datetime
 from windows import EditLK, AddLk, SetupPodr, SetupSpec, SetupType, SetupPlane, Complete, Listlk, Checks
 
@@ -155,15 +155,21 @@ class MainWindow(QtWidgets.QMainWindow):
             row += 1
 
     def calc_nevyp(self, listk) -> str:
-        return 'В разработке.'
-        # if len(not_done) == 0:
-        #     return "Выполнено на всех!"
-        # else:
-        #     text = ''
-        #     for pl in not_done:
-        #         text += f'{pl.bort_num} ,'
-        #
-        #     return text[:-2]
+        done = []
+        not_done = []
+        for plane_id in listk.planes_for_exec:
+            plane = PlaneModel.get(PlaneModel.id == plane_id['id'])
+            if not len(CompleteListModel.select().where(CompleteListModel.id_plane == plane_id['id'])) == len(listk.specialties_for_exec):
+                not_done.append(plane.tail_number)
+
+        if len(not_done) == 0:
+            return "Выполнено на всех!"
+        else:
+            text = ''
+            for pl in not_done:
+                text += f'{pl}, '
+
+            return text[:-2]
 
     def add_form(self):
         """Открываем новую форму добавления листа контроля"""
