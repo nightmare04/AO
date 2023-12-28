@@ -129,8 +129,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def fill_table(self):
         """Заполняем таблицу долгами"""
-        for lk in ListControlModel.select().where(ListControlModel.complete_flag == False):
-            self.lks.append(lk)
+        self.lks = ListControlModel.select().where(ListControlModel.complete_flag == False)
         self.ui.tableWidget.setRowCount(len(self.lks))
         row = 0
         for listk in self.lks:
