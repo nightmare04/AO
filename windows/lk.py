@@ -7,9 +7,9 @@ from modules.database import *
 
 
 class AddLk(QtWidgets.QWidget):
-    def __init__(self):
+    def __init__(self, listk=ListControlM()):
         super().__init__()
-        self.lk = ListControlModel()
+        self.lk = listk
         self.spec_btns = []
         self.plane_type_btns = []
         self.unit_btns = []
@@ -24,7 +24,7 @@ class AddLk(QtWidgets.QWidget):
         self.ui.cancel_btn.clicked.connect(self.close)
         self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
         self.fill_planes()
-        self.fill_planes_to_podr()
+        self.fill_planes_to_unit()
         self.init_spec()
         self.setAcceptDrops(True)
         self.fill_selectors()
@@ -39,12 +39,12 @@ class AddLk(QtWidgets.QWidget):
         group_layout.addWidget(unit_groupbox)
         unit_groupbox_layout = QGridLayout()
         unit_groupbox.setLayout(unit_groupbox_layout)
-        units = UnitModel.select()
+        units = UnitM.select()
 
         row = 0
         col = 0
         for unit in units:
-            unit: UnitModel
+            unit: UnitM
             btn = QPushButton(unit.name)
             btn.setCheckable(True)
             btn.clicked.connect(self.select_by_unit)
@@ -64,12 +64,12 @@ class AddLk(QtWidgets.QWidget):
         group_layout.addWidget(plane_type_groupbox)
         plane_type_groupbox_layout = QGridLayout()
         plane_type_groupbox.setLayout(plane_type_groupbox_layout)
-        plane_types = PlaneTypeModel.select()
+        plane_types = PlaneTypeM.select()
 
         row = 0
         col = 0
         for pt in plane_types:
-            pt: PlaneTypeModel
+            pt: PlaneTypeM
             btn = QPushButton(pt.name)
             btn.setCheckable(True)
             btn.clicked.connect(self.select_by_plane_type)
@@ -110,28 +110,28 @@ class AddLk(QtWidgets.QWidget):
                     btn.setChecked(False)
 
     def fill_planes(self):
-        for pl in PlaneModel.select():
-            pl: PlaneModel
+        for pl in PlaneM.select():
+            pl: PlaneM
             btn = DragButton(text=str(pl.tail_number))
             btn.setFixedWidth(30)
             btn.setCheckable(True)
             btn.plane = pl
             self.plane_btns.append(btn)
 
-    def fill_planes_to_podr(self):
-        all_unit = UnitModel.select()
-        for p in all_unit:
+    def fill_planes_to_unit(self):
+        all_unit = UnitM.select()
+        for u in all_unit:
             row = 0
             col = 0
-            groupbox = DragGroupbox(p.name)
+            groupbox = DragGroupbox(u.name)
             layout_planes = QGridLayout()
             groupbox.setLayout(layout_planes)
-            groupbox.podr = p
+            groupbox.unit = u
             groupbox.plane_btns = []
             self.ui.planesLayout.addWidget(groupbox)
             self.plane_groups.append(groupbox)
             for plane_btn in self.plane_btns:
-                if plane_btn.plane.id == p.id:
+                if plane_btn.plane.id == u.id:
                     if col < 3:
                         layout_planes.addWidget(plane_btn, row, col)
                         col += 1
@@ -148,7 +148,7 @@ class AddLk(QtWidgets.QWidget):
             col = 0
             row = 0
             for plane_btn in self.plane_btns:
-                if plane_btn.plane.id_podr == groupbox.unit.id_podr:
+                if plane_btn.plane.unit == groupbox.unit.id:
                     if col < 3:
                         groupbox.layout().addWidget(plane_btn, row, col)
                         col += 1
@@ -176,7 +176,7 @@ class AddLk(QtWidgets.QWidget):
 
     def init_spec(self):
         """Готовим специальности"""
-        all_spec = SubunitModel.select()
+        all_spec = SubunitM.select()
         groupbox = QGroupBox("Специальности")
         layout_spec = QHBoxLayout()
         groupbox.setLayout(layout_spec)
@@ -204,9 +204,13 @@ class AddLk(QtWidgets.QWidget):
     @staticmethod
     def pack_planes_on_create():
         result = []
-        for plane in PlaneModel.select():
+        for plane in PlaneM.select():
+            plane: PlaneM
             result.append({'id': str(plane.id),
-                           'unit': str(plane.unit)})
+                           'unit': str(plane.unit),
+                           'plane_type': str(plane.plane_type),
+                           'tail_number': str(plane.tail_number),
+                           'factory_number': str(plane.factory_number)})
 
         return result
 
@@ -214,8 +218,7 @@ class AddLk(QtWidgets.QWidget):
         planes_for_exec = []
         for plane_btn in self.plane_btns:
             if plane_btn.isChecked():
-                planes_for_exec.append({'id': str(plane_btn.plane.id),
-                                       'unit': str(plane_btn.plane.unit)})
+                planes_for_exec.append(plane_btn.plane.id)
 
         return planes_for_exec
 
@@ -229,12 +232,12 @@ class AddLk(QtWidgets.QWidget):
 
 
 class EditLK(AddLk):
-    def __init__(self, listk, db):
-        super().__init__(db)
+    def __init__(self, listk):
+        super().__init__(listk)
         self.edit = True
         self.lk = listk
         self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
-        self.setWindowTitle(f"Лист контроля №{self.lk.lk}")
+        self.setWindowTitle(f"Лист контроля №{self.lk.number_lk}")
         self.ui.add_btn.setText("Сохранить")
         self.ui.add_btn.clicked.disconnect()
         self.ui.add_btn.clicked.connect(self.save_lk)
@@ -242,47 +245,40 @@ class EditLK(AddLk):
         self.ui.cancel_btn.clicked.disconnect()
         self.ui.cancel_btn.clicked.connect(self.delete_lk)
         self.load_lk()
-        self.fill_planes()
         self.update_planes()
 
     def fill_planes(self):
-        for id_plane, id_podr in self.lk.planes.items():
-            p = self.db.load_plane(id_plane)
-            p.id_podr = id_podr
-            btn = DragButton(text=str(p.bort_num))
+        for plane_from_lk in self.lk.planes_on_create:
+            p = PlaneM(id=int(plane_from_lk['id']),
+                       tail_number=plane_from_lk['tail_number'],
+                       factory_number=plane_from_lk['factory_number'],
+                       unit_id=plane_from_lk['unit'],
+                       plane_type_id=plane_from_lk['plane_type'])
+
+            btn = DragButton(text=p.tail_number)
             btn.setFixedWidth(30)
             btn.setCheckable(True)
             btn.plane = p
             self.plane_btns.append(btn)
-
-        for btn in self.plane_btns:
-            if btn.plane.id_plane in self.lk.komu_planes:
+            if p.id in self.lk.planes_for_exec:
                 btn.setChecked(True)
 
     def load_lk(self):
         """Подгружаем лист контроля"""
-        self.ui.TlgLineEdit.setText(self.lk.tlg)
-        self.ui.TlgDateEdit.setDate(datetime.strptime(str(self.lk.date_tlg), '%d.%m.%Y'))
-        self.ui.SrokDateEdit.setDate(datetime.strptime(str(self.lk.date_vypoln), '%d.%m.%Y'))
-        self.ui.textEdit.setText(self.lk.opisanie)
-        self.ui.LkLineEdit.setText(self.lk.lk)
-
-        for plane_btn in self.plane_btns:
-            plane_btn.setChecked(False)
-            if plane_btn.plane.id_plane in self.lk.komu_planes:
-                plane_btn.setChecked(True)
+        self.ui.TlgLineEdit.setText(self.lk.telegram)
+        self.ui.TlgDateEdit.setDate(self.lk.date_telegram)
+        self.ui.SrokDateEdit.setDate(self.lk.date_deadline)
+        self.ui.textEdit.setText(self.lk.description)
+        self.ui.LkLineEdit.setText(self.lk.number_lk)
 
         for spec_btn in self.spec_btns:
             spec_btn.setChecked(False)
-            if spec_btn.spec.id_spec in self.lk.komu_spec:
+            if spec_btn.spec.id in self.lk.specialties_for_exec:
                 spec_btn.setChecked(True)
 
     def save_lk(self):
-        listk = LK()
-        listk.pack_lk(self)
-        self.db.update_lk(listk)
-        self.close()
+        self.add_lk()
 
     def delete_lk(self):
-        self.db.delete_lk(self.lk)
+        self.lk.delete_instance()
         self.close()

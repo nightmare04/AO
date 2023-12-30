@@ -2,7 +2,7 @@ from PyQt6 import QtWidgets, QtCore
 from ui import Ui_CompleteForm
 from docxtpl import DocxTemplate
 from datetime import datetime
-from modules import ListControlModel, PlaneModel, UnitModel
+from modules import ListControlM, PlaneM, UnitM, CompleteLM
 import os
 
 
@@ -11,7 +11,7 @@ class Complete(QtWidgets.QWidget):
         super().__init__()
         self.plane_complete = None
         self.lk = listk
-        self.lk: ListControlModel
+        self.lk: ListControlM
         self.podrs = []
         self.plane_btns = []
         self.plane_groups = []
@@ -31,52 +31,42 @@ class Complete(QtWidgets.QWidget):
         planes_for_exec = self.lk.planes_for_exec
         for plane in planes_for_exec:
             btn = QtWidgets.QPushButton()
-            btn.plane = PlaneModel.get(PlaneModel.id == plane.id)
+            btn.plane = PlaneM.get(PlaneM.id == plane['id'])
             btn.setText(btn.plane.tail_number)
             btn.setFixedWidth(40)
             btn.clicked.connect(self.open_plane_complete)
             btn.setChecked(True)
             self.plane_btns.append(btn)
 
+        all_unit = UnitM.select()
 
-        # for id_plane, id_podr in PlaneModel.select(ListControlModel.planes_for_exec):
-        #     pl = PlaneModel.get(PlaneModel.id == id_plane)
-        #     pl.unit = id_podr
-        #     btn = QtWidgets.QPushButton(str(pl.tail_number))
-        #     btn.setFixedWidth(40)
-        #     btn.plane = pl
-        #     btn.clicked.connect(self.open_plane_complete)
-        #     btn.setChecked(True)
-        #     self.plane_btns.append(btn)
-        #
-        # all_unit = UnitModel.select()
-        # for u in all_unit:
-        #     groupbox = QtWidgets.QGroupBox(u.name)
-        #     layout_planes = QtWidgets.QGridLayout()
-        #     groupbox.setLayout(layout_planes)
-        #     groupbox.podr = u
-        #     groupbox.plane_btns = []
-        #
-        #     row = 0
-        #     col = 0
-        #     for plane_btn in self.plane_btns:
-        #         if (plane_btn.plane.id in self.lk.planes_for_exec) and (plane_btn.plane.id_podr == u.id_podr):
-        #             if col < 3:
-        #                 layout_planes.addWidget(plane_btn, row, col)
-        #                 col += 1
-        #             else:
-        #                 row += 1
-        #                 col = 0
-        #                 layout_planes.addWidget(plane_btn, row, col)
-        #                 col += 1
-        #
-        #         self.ui.podr_layout.addWidget(groupbox)
-        #         self.plane_groups.append(groupbox)
-        #
-        # self.ui.complete_checkbox.setChecked(bool(self.lk.complete))
-        # self.ui.otvet_linedit.setText(self.lk.otvet)
-        # if not self.lk.date_otvet == '':
-        #     self.ui.otvet_dateedit.setDate(datetime.strptime(str(self.lk.date_otvet), '%d.%m.%Y'))
+        for unit in all_unit:
+            groupbox = QtWidgets.QGroupBox(unit.name)
+            layout_planes = QtWidgets.QGridLayout()
+            groupbox.setLayout(layout_planes)
+            groupbox.podr = unit
+            groupbox.plane_btns = []
+
+            row = 0
+            col = 0
+            for plane_btn in self.plane_btns:
+                if plane_btn.plane.unit == unit.id:
+                    if col < 3:
+                        layout_planes.addWidget(plane_btn, row, col)
+                        col += 1
+                    else:
+                        row += 1
+                        col = 0
+                        layout_planes.addWidget(plane_btn, row, col)
+                        col += 1
+
+                self.ui.podr_layout.addWidget(groupbox)
+                self.plane_groups.append(groupbox)
+
+        self.ui.complete_checkbox.setChecked(self.lk.complete_flag)
+        self.ui.otvet_linedit.setText(self.lk.answer)
+        if self.lk.answer_date:
+            self.ui.otvet_dateedit.setDate(self.lk.answer_date)
 
     def event(self, e):
         if e.type() == QtCore.QEvent.Type.WindowActivate:
@@ -85,7 +75,10 @@ class Complete(QtWidgets.QWidget):
 
     def check_complete(self):
         for btn in self.plane_btns:
-            if len(self.db.get_complete(self.lk, btn.plane)) == len(self.lk.komu_spec):
+            count = (CompleteLM.select().
+                     where(CompleteLM.id_plane == btn.plane.id).
+                     where(CompleteLM.id_list == self.lk.id))
+            if len(count) == len(self.lk.specialties_for_exec):
                 btn.setStyleSheet("background-color: green; color: white;")
 
             else:

@@ -1,5 +1,5 @@
 from PyQt6 import QtWidgets, QtCore
-from modules import PlaneModel
+from modules import PlaneM, UnitM, PlaneTypeM
 
 
 class SetupPlane(QtWidgets.QWidget):
@@ -35,36 +35,35 @@ class SetupPlane(QtWidgets.QWidget):
         self.table.setHorizontalHeaderLabels(('Тип', 'Бортовой номер', 'Заводской номер', ''))
 
     def fill_table(self):
-        planes = PlaneModel.select()
+        planes = PlaneM.select().join(PlaneTypeM)
         self.table.setRowCount(len(planes))
         row = 0
         for p in planes:
             btn = QtWidgets.QPushButton('Изменить')
             btn.clicked.connect(self.open_change_plane)
             btn.plane = p
-            self.table.setItem(row, 0, QtWidgets.QTableWidgetItem())
-            self.table.setItem(row, 1, QtWidgets.QTableWidgetItem())
-            self.table.setItem(row, 2, QtWidgets.QTableWidgetItem())
+            self.table.setItem(row, 0, QtWidgets.QTableWidgetItem(str(p.plane_type.name)))
+            self.table.setItem(row, 1, QtWidgets.QTableWidgetItem(str(p.tail_number)))
+            self.table.setItem(row, 2, QtWidgets.QTableWidgetItem(str(p.factory_number)))
             self.table.setCellWidget(row, 3, btn)
 
             row += 1
 
     def open_add_plane(self):
-        self.add_form = AddPlane(self.db)
+        self.add_form = AddPlane()
         self.add_form.show()
 
     def open_change_plane(self):
         sender = self.sender()
-        self.change_form = EditPlane(sender.plane, self.db)
+        self.change_form = EditPlane(sender.plane)
         self.change_form.show()
 
 
 class AddPlane(QtWidgets.QWidget):
-    def __init__(self, db):
+    def __init__(self):
         super().__init__()
-        self.db = db
         self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
-        self.plane = Plane()
+        self.plane = PlaneM()
         self.types = {}
         self.podrs = {}
         self.main_layout = QtWidgets.QGridLayout()
@@ -99,37 +98,38 @@ class AddPlane(QtWidgets.QWidget):
         self.main_layout.addWidget(self.add_btn, 4, 0, 1, 2)
 
     def add_podr_combo(self):
-        podrs = self.db.load_all_podr()
+        podrs = UnitM.select()
         res_podr = []
         for p in podrs:
-            self.podrs[p.name_podr] = p.id_podr
-            res_podr.append(p.name_podr)
+            res_podr.append(p.name)
         self.podr_select.addItems(res_podr)
 
     def add_types_combo(self):
-        types = self.db.load_all_type()
+        types = PlaneTypeM.select()
         res_type = []
         for t in types:
-            self.types[t.name_type] = t.id_type
-            res_type.append(t.name_type)
+            res_type.append(str(t.name))
         self.type_select.addItems(res_type)
 
     def add_plane(self):
-        self.plane.pack_plane(self)
-        self.db.add_plane(self.plane)
+        self.plane.unit = str(UnitM.get(UnitM.name == self.podr_select.currentText()))
+        self.plane.plane_type = str(PlaneTypeM.get(PlaneTypeM.name == self.type_select.currentText()))
+        self.plane.tail_number = self.bort_num_edit.text()
+        self.plane.factory_number = self.zav_num_edit.text()
+        self.plane.save()
         self.close()
 
 
 class EditPlane(AddPlane):
-    def __init__(self, p, db):
-        super().__init__(db)
+    def __init__(self, p):
+        super().__init__()
         self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
-        self.plane = Plane().unpack_plane(p)
+        self.plane = p
         self.setWindowTitle('Изменить самолет')
 
         self.add_btn.setText('Сохранить')
         self.add_btn.clicked.disconnect()
-        self.add_btn.clicked.connect(self.save_plane)
+        self.add_btn.clicked.connect(self.add_plane)
 
         self.del_btn = QtWidgets.QPushButton('Удалить')
         self.del_btn.clicked.connect(self.del_plane)
@@ -138,15 +138,11 @@ class EditPlane(AddPlane):
         self.fill_plane()
 
     def fill_plane(self):
-        self.bort_num_edit.setText(str(self.plane.bort_num))
-        self.zav_num_edit.setText(str(self.plane.zav_num))
+        self.bort_num_edit.setText(str(self.plane.tail_number))
+        self.zav_num_edit.setText(str(self.plane.factory_number))
+        self.type_select.setCurrentText(PlaneTypeM.get(PlaneTypeM.id == self.plane.plane_type).name)
         # self.type_select.setCurrentIndex(self.type_select.findText(db.load_type_by_id(self.plane.id_type)))
 
-    def save_plane(self):
-        self.plane.pack_plane(self)
-        self.db.update_plane(self.type)
-        self.close()
-
     def del_plane(self):
-        self.db.delete_plane(self.plane.id_plane)
+        self.plane.delete_instance()
         self.close()

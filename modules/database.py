@@ -12,15 +12,15 @@ class BaseModel(Model):
         database = db
 
 
-class ListControlModel(BaseModel):
+class ListControlM(BaseModel):
     id = PrimaryKeyField(null=False)
     telegram = CharField(max_length=100, null=False)
     date_telegram = DateField()
     date_deadline = DateField()
     description = TextField(null=True)
     number_lk = CharField(max_length=10, null=True)
-    answer_telegram = CharField(max_length=100, null=True)
-    date_answer = DateField(null=True)
+    answer = CharField(max_length=100, null=True)
+    answer_date = DateField(null=True)
     specialties_for_exec = JSONField()
     planes_for_exec = JSONField()
     planes_on_create = JSONField()
@@ -30,45 +30,45 @@ class ListControlModel(BaseModel):
         db_table = 'list_control'
 
 
-class UnitModel(BaseModel):
+class UnitM(BaseModel):
     id = PrimaryKeyField(null=False)
-    name = CharField(max_length=30)
+    name = CharField(max_length=30, unique=True)
     performs_work = BooleanField(default=True)
 
     class Meta:
         db_table = 'units'
 
 
-class SubunitModel(BaseModel):
+class SubunitM(BaseModel):
     id = PrimaryKeyField(null=False)
-    name = CharField(max_length=30)
+    name = CharField(max_length=30, unique=True)
 
     class Meta:
         db_table = 'subunits'
 
 
-class PlaneTypeModel(BaseModel):
+class PlaneTypeM(BaseModel):
     id = PrimaryKeyField(null=False)
-    name = CharField(max_length=30)
+    name = CharField(max_length=30, unique=True)
 
     class Meta:
         db_table = 'plane_types'
 
 
-class PlaneModel(BaseModel):
+class PlaneM(BaseModel):
     id = PrimaryKeyField(null=False)
     tail_number = CharField(max_length=10)
     factory_number = CharField(max_length=30, null=True)
-    unit = ForeignKeyField(UnitModel.id, backref='units', on_delete='cascade')
-    plane_type = ForeignKeyField(PlaneTypeModel.id, backref='plane_types', on_delete='cascade')
+    unit = ForeignKeyField(UnitM, backref='planes', on_delete='cascade')
+    plane_type = ForeignKeyField(PlaneTypeM, backref='planes', on_delete='cascade')
 
     class Meta:
         db_table = 'planes'
 
 
-class CheckModel(BaseModel):
+class CheckM(BaseModel):
     id = PrimaryKeyField(null=False)
-    name = CharField(max_length=30)
+    name = CharField(max_length=30, unique=True)
     period = CharField(max_length=30)
     last_check = DateField()
 
@@ -76,10 +76,10 @@ class CheckModel(BaseModel):
         db_table = 'checks'
 
 
-class CompleteListModel(BaseModel):
-    id_list = ForeignKeyField(ListControlModel, backref='completes', on_delete='cascade')
-    id_plane = ForeignKeyField(PlaneModel, backref='planes', on_delete='cascade')
-    id_subunit = ForeignKeyField(SubunitModel, backref='subunits', on_delete='cascade')
+class CompleteLM(BaseModel):
+    id_list = ForeignKeyField(ListControlM, backref='completes', on_delete='cascade')
+    id_plane = ForeignKeyField(PlaneM, backref='planes', on_delete='cascade')
+    id_subunit = ForeignKeyField(SubunitM, backref='subunits', on_delete='cascade')
 
     class Meta:
         db_table = 'complete_list'
@@ -90,9 +90,9 @@ def create_tables():
     with db:
         db.create_tables(
             [
-                PlaneModel, PlaneTypeModel, UnitModel,
-                SubunitModel, ListControlModel, CompleteListModel,
-                CheckModel
+                PlaneM, PlaneTypeM, UnitM,
+                SubunitM, ListControlM, CompleteLM,
+                CheckM
             ]
         )
 

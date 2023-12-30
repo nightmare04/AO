@@ -2,9 +2,9 @@ import datetime
 
 from PyQt6 import QtWidgets, QtCore
 from PyQt6.QtWidgets import (QPushButton, QTableWidget, QTableWidgetItem, QLineEdit, QDateEdit, QComboBox, QVBoxLayout,
-                             QGridLayout, QLabel)
+                             QGridLayout, QLabel, QHBoxLayout)
 
-from modules import CheckModel
+from modules import CheckM
 
 
 class Checks(QtWidgets.QWidget):
@@ -24,15 +24,21 @@ class Checks(QtWidgets.QWidget):
         self.table.setHorizontalHeaderLabels(('Название', 'Периодичность', 'Дата последней проверки', ''))
         self.table.setColumnWidth(2, 160)
 
+        self.hor_layout = QHBoxLayout()
+        self.main_layout.addLayout(self.hor_layout)
+
         self.add_btn = QPushButton("Добавить")
+        self.close_btn = QPushButton("Закрыть")
+        self.close_btn.clicked.connect(self.close)
         self.add_btn.clicked.connect(self.open_add_form)
-        self.main_layout.addWidget(self.add_btn)
+        self.hor_layout.addWidget(self.add_btn)
+        self.hor_layout.addWidget(self.close_btn)
 
         self.all_checks = []
         self.fill_table()
 
     def event(self, e):
-        if e == QtCore.QEvent.Type.WindowUnblocked:
+        if e.type() == QtCore.QEvent.Type.WindowActivate:
             self.fill_table()
         return QtWidgets.QWidget.event(self, e)
 
@@ -41,13 +47,12 @@ class Checks(QtWidgets.QWidget):
         self.new_window.show()
 
     def fill_table(self):
-        for check in CheckModel.select():
-            self.all_checks.append(check)
+        self.all_checks = CheckM.select()
         self.table.setRowCount(len(self.all_checks))
 
         row = 0
         for ch in self.all_checks:
-            ch: CheckModel
+            ch: CheckM
             btn = QPushButton("Изменить")
             btn.check = ch
             btn.clicked.connect(self.edit_check)
@@ -73,7 +78,7 @@ class AddCheck(QtWidgets.QWidget):
         self.main_layout = QGridLayout()
         self.setLayout(self.main_layout)
 
-        self.check = CheckModel()
+        self.check = CheckM()
 
         self.name_label = QLabel("Название:")
         self.name_line_edit = QLineEdit()
@@ -101,8 +106,8 @@ class AddCheck(QtWidgets.QWidget):
         self.main_layout.addWidget(self.cancel_btn, 3, 1)
 
     def add_check(self):
-        check: CheckModel
-        check = CheckModel(
+        check: CheckM
+        check = CheckM(
             name=self.name_line_edit.text(),
             last_check=self.last_check_date.date().toPyDate(),
             period=self.period_combobox.currentText()
@@ -112,7 +117,7 @@ class AddCheck(QtWidgets.QWidget):
 
 
 class EditCheck(AddCheck):
-    def __init__(self, ch: CheckModel):
+    def __init__(self, ch: CheckM):
         super().__init__()
         self.check = ch
         self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
@@ -127,14 +132,14 @@ class EditCheck(AddCheck):
         self.last_check_date.setDate(ch.last_check)
 
     def save_check(self):
-        self.check: CheckModel
-        self.check.name = self.name_line_edit.text(),
-        self.check.last_check = self.last_check_date.date().toPyDate(),
+        self.check: CheckM
+        self.check.name = self.name_line_edit.text()
+        self.check.last_check = self.last_check_date.date().toPyDate()
         self.check.period = str(self.period_combobox.currentText())
 
         self.check.save()
         self.close()
 
     def delete_check(self):
-        self.check.delete()
+        self.check.delete_instance()
         self.close()

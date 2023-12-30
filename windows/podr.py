@@ -1,6 +1,6 @@
 from PyQt6 import QtWidgets, QtCore
 from PyQt6.QtWidgets import QPushButton, QTableWidget, QTableWidgetItem, QGridLayout, QLabel, QLineEdit, QCheckBox
-from modules import UnitModel
+from modules import UnitM
 
 class SetupPodr(QtWidgets.QWidget):
     def __init__(self):
@@ -36,7 +36,7 @@ class SetupPodr(QtWidgets.QWidget):
         self.table.hideColumn(0)
 
     def fill_table(self):
-        podrs = UnitModel.select()
+        podrs = UnitM.select()
         self.table.setRowCount(len(podrs))
         row = 0
         for p in podrs:
@@ -62,7 +62,7 @@ class AddPodr(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
-        self.podr = UnitModel()
+        self.podr = UnitM()
         self.main_layout = QGridLayout()
         self.setLayout(self.main_layout)
         self.setWindowTitle(f'Добавить подразделение')
@@ -83,7 +83,7 @@ class AddPodr(QtWidgets.QWidget):
         self.main_layout.addWidget(self.add_btn, 2, 0, 1, 2)
 
     def add_podr(self):
-        podr: UnitModel
+        podr: UnitM
         self.podr.name = self.name_edit.text()
         self.podr.performs_work = self.with_planes.isChecked()
         self.podr.save()
@@ -95,7 +95,7 @@ class EditPodr(AddPodr):
         super().__init__()
         self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
         self.podr = p
-        p: UnitModel
+        p: UnitM
         self.setWindowTitle('Изменить подразделение')
         self.add_btn.setText('Сохранить')
 
@@ -112,13 +112,13 @@ class EditPodr(AddPodr):
         self.main_layout.addWidget(self.del_btn, 4, 0, 1, 2)
 
     def save_podr(self):
-        self.podr: UnitModel
+        self.podr: UnitM
         self.podr.name = self.name_edit.text()
         self.podr.performs_work = self.with_planes.isChecked()
         self.podr.save()
         self.close()
 
     def del_podr(self):
-        self.podr: UnitModel
+        self.podr: UnitM
         self.podr.delete_instance()
         self.close()

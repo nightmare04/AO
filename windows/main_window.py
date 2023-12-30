@@ -3,7 +3,7 @@ from PyQt6.QtCore import QDate
 from PyQt6.QtGui import QColor
 from PyQt6.QtWidgets import QVBoxLayout, QPushButton, QTableWidgetItem, QTableWidget
 from ui import Ui_MainWindow
-from modules import Database, ClickQlabel, CheckModel, ListControlModel, CompleteListModel, PlaneModel
+from modules import Database, ClickQlabel, CheckM, ListControlM, CompleteLM, PlaneM
 from datetime import datetime
 from windows import EditLK, AddLk, SetupPodr, SetupSpec, SetupType, SetupPlane, Complete, Listlk, Checks
 
@@ -45,7 +45,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.new_form.show()
 
     def fill_checks(self):
-        self.checks = CheckModel.select()
+        self.checks = CheckM.select()
         self.clear_layout()
 
         for ch in self.checks:
@@ -123,17 +123,17 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.tableWidget.setSortingEnabled(True)
 
     def open_complete_form(self, row):
-        listk = ListControlModel.get(ListControlModel.id == self.ui.tableWidget.item(row, 0).text())
+        listk = ListControlM.get(ListControlM.id == self.ui.tableWidget.item(row, 0).text())
         self.new_form = Complete(listk)
         self.new_form.show()
 
     def fill_table(self):
         """Заполняем таблицу долгами"""
-        self.lks = ListControlModel.select().where(ListControlModel.complete_flag == False)
+        self.lks = ListControlM.select().where(ListControlM.complete_flag == False)
         self.ui.tableWidget.setRowCount(len(self.lks))
         row = 0
         for listk in self.lks:
-            listk: ListControlModel
+            listk: ListControlM
             btn = QPushButton("Изменить")
             btn.lk = listk
             btn.clicked.connect(self.open_edit_form)
@@ -154,12 +154,12 @@ class MainWindow(QtWidgets.QMainWindow):
             self.ui.tableWidget.setCellWidget(row, 7, btn)
             row += 1
 
-    def calc_nevyp(self, listk) -> str:
-        done = []
+    @staticmethod
+    def calc_nevyp(listk) -> str:
         not_done = []
         for plane_id in listk.planes_for_exec:
-            plane = PlaneModel.get(PlaneModel.id == plane_id['id'])
-            if not len(CompleteListModel.select().where(CompleteListModel.id_plane == plane_id['id'])) == len(listk.specialties_for_exec):
+            plane = PlaneM.get(PlaneM.id == plane_id)
+            if not len(CompleteLM.select().where(CompleteLM.id_plane == plane_id)) == len(listk.specialties_for_exec):
                 not_done.append(plane.tail_number)
 
         if len(not_done) == 0:
@@ -179,5 +179,5 @@ class MainWindow(QtWidgets.QMainWindow):
     def open_edit_form(self):
         """Открытие формы редактирования листа контроля"""
         sender = self.sender()
-        self.new_form = EditLK(sender.lk, self.db)
+        self.new_form = EditLK(sender.lk)
         self.new_form.show()

@@ -1,5 +1,5 @@
 from PyQt6 import QtWidgets, QtCore
-from modules import SubunitModel
+from modules import SubunitM
 
 
 class SetupSpec(QtWidgets.QWidget):
@@ -35,7 +35,7 @@ class SetupSpec(QtWidgets.QWidget):
         self.table.hideColumn(0)
 
     def fill_table(self):
-        specs = SubunitModel.select()
+        specs = SubunitM.select()
 
         self.table.setRowCount(len(specs))
         row = 0
@@ -62,7 +62,7 @@ class AddSpec(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
-        self.spec = SubunitModel()
+        self.spec = SubunitM()
         self.main_layout = QtWidgets.QGridLayout()
         self.setLayout(self.main_layout)
         self.setWindowTitle(f'Добавить специальность')
@@ -84,17 +84,17 @@ class AddSpec(QtWidgets.QWidget):
 
 
 class EditSpec(AddSpec):
-    def __init__(self):
+    def __init__(self, s):
         super().__init__()
         self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
         self.setWindowTitle('Изменить специальность')
         self.add_btn.setText('Сохранить')
         self.spec = s
         self.label.setText('Введите новое имя:')
-        self.name_edit.setText(str(s.name_spec))
+        self.name_edit.setText(str(s.name))
         self.add_btn.clicked.disconnect()
         self.add_btn.clicked.connect(self.save_spec)
-        self.del_btn = QPushButton("Удалить")
+        self.del_btn = QtWidgets.QPushButton("Удалить")
         self.del_btn.clicked.connect(self.del_spec)
         self.main_layout.addWidget(self.del_btn, 2, 0, 1, 2)
 

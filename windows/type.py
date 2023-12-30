@@ -1,5 +1,5 @@
 from PyQt6 import QtWidgets, QtCore
-from modules import PlaneTypeModel
+from modules import PlaneTypeM
 
 
 class SetupType(QtWidgets.QWidget):
@@ -35,7 +35,7 @@ class SetupType(QtWidgets.QWidget):
         self.table.hideColumn(0)
 
     def fill_table(self):
-        types = PlaneTypeModel.select()
+        types = PlaneTypeM.select()
         self.table.setRowCount(len(types))
         row = 0
         for t in types:
@@ -61,7 +61,7 @@ class AddType(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
-        self.type = PlaneTypeModel()
+        self.type = PlaneTypeM()
         self.main_layout = QtWidgets.QGridLayout()
         self.setLayout(self.main_layout)
         self.setWindowTitle(f'Добавить тип самолета')
