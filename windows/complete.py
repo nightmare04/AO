@@ -116,7 +116,6 @@ class Complete(QtWidgets.QWidget):
 class EditComplete(QtWidgets.QWidget):
     def __init__(self, plane, listk, parent=None):
         super().__init__(parent)
-        self.compl = CompleteLM.select(CompleteLM.id_subunit).where(CompleteLM.id_plane == plane.id, CompleteLM.id_list == listk.id)
         self.lk = listk
         self.plane = plane
         self.resize(250, 200)
@@ -125,6 +124,10 @@ class EditComplete(QtWidgets.QWidget):
         self.setLayout(self.main_layout)
         self.subunits = SubunitM.select()
         self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
+        self.completed = self.compl_from_model()
+        self.init_subunits()
+
+    def init_subunits(self):
         for su in self.subunits:
             btn = QtWidgets.QPushButton(su.name)
             btn.spec = su
@@ -133,8 +136,14 @@ class EditComplete(QtWidgets.QWidget):
             btn.clicked.connect(self.handle_spec)
             if btn.spec.id in btn.lk.specialties_for_exec:
                 self.main_layout.addWidget(btn)
-                if int(btn.spec.id) in self.compl:
+                if str(btn.spec.id) in self.completed:
                     btn.setChecked(True)
+
+    def compl_from_model(self):
+        result = []
+        for model in CompleteLM.select().where(CompleteLM.id_plane == self.plane.id, CompleteLM.id_list == self.lk.id):
+            result.append(str(model.id_subunit))
+        return result
 
     def handle_spec(self):
         sender = self.sender()
