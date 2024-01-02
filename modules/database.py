@@ -61,6 +61,7 @@ class PlaneM(BaseModel):
     factory_number = CharField(max_length=30, null=True)
     unit = ForeignKeyField(UnitM, backref='planes', on_delete='cascade')
     plane_type = ForeignKeyField(PlaneTypeM, backref='planes', on_delete='cascade')
+    deleted = BooleanField(default=False)
 
     class Meta:
         db_table = 'planes'

@@ -35,7 +35,7 @@ class SetupPlane(QtWidgets.QWidget):
         self.table.setHorizontalHeaderLabels(('Тип', 'Бортовой номер', 'Заводской номер', ''))
 
     def fill_table(self):
-        planes = PlaneM.select().join(PlaneTypeM)
+        planes = PlaneM.select().where(PlaneM.deleted == False).join(PlaneTypeM)
         self.table.setRowCount(len(planes))
         row = 0
         for p in planes:
@@ -144,5 +144,6 @@ class EditPlane(AddPlane):
         # self.type_select.setCurrentIndex(self.type_select.findText(db.load_type_by_id(self.plane.id_type)))
 
     def del_plane(self):
-        self.plane.delete_instance()
+        self.plane.deleted = True
+        self.plane.save()
         self.close()

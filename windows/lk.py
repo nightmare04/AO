@@ -92,9 +92,9 @@ class AddLk(QtWidgets.QWidget):
         btns = self.findChildren(DragButton)
         for unit_btn in self.unit_btns:
             for btn in btns:
-                if btn.plane.id == unit_btn.unit.id and unit_btn.isChecked():
+                if btn.plane.unit.id == unit_btn.unit.id and unit_btn.isChecked():
                     btn.setChecked(True)
-                elif btn.plane.id == unit_btn.unit.id:
+                elif btn.plane.unit.id == unit_btn.unit.id:
                     btn.setChecked(False)
 
     def select_by_plane_type(self):
@@ -104,13 +104,13 @@ class AddLk(QtWidgets.QWidget):
         btns = self.findChildren(DragButton)
         for plane_type_btn in self.plane_type_btns:
             for btn in btns:
-                if btn.plane.id == plane_type_btn.plane_type.id and plane_type_btn.isChecked():
+                if btn.plane.plane_type.id == plane_type_btn.plane_type.id and plane_type_btn.isChecked():
                     btn.setChecked(True)
-                elif btn.plane.id == plane_type_btn.plane_type.id:
+                elif btn.plane.plane_type.id == plane_type_btn.plane_type.id:
                     btn.setChecked(False)
 
     def fill_planes(self):
-        for pl in PlaneM.select():
+        for pl in PlaneM.select().where(PlaneM.deleted == False):
             pl: PlaneM
             btn = DragButton(text=str(pl.tail_number))
             btn.setFixedWidth(30)
@@ -131,7 +131,7 @@ class AddLk(QtWidgets.QWidget):
             self.ui.planesLayout.addWidget(groupbox)
             self.plane_groups.append(groupbox)
             for plane_btn in self.plane_btns:
-                if plane_btn.plane.id == u.id:
+                if plane_btn.plane.unit.id == u.id:
                     if col < 3:
                         layout_planes.addWidget(plane_btn, row, col)
                         col += 1
@@ -204,7 +204,7 @@ class AddLk(QtWidgets.QWidget):
     @staticmethod
     def pack_planes_on_create():
         result = []
-        for plane in PlaneM.select():
+        for plane in PlaneM.select().where(PlaneM.deleted == False):
             plane: PlaneM
             result.append({'id': str(plane.id),
                            'unit': str(plane.unit),

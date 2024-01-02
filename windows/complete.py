@@ -2,7 +2,7 @@ from PyQt6 import QtWidgets, QtCore
 from ui import Ui_CompleteForm
 from docxtpl import DocxTemplate
 from datetime import datetime
-from modules import ListControlM, PlaneM, UnitM, CompleteLM
+from modules import ListControlM, PlaneM, UnitM, CompleteLM, SubunitM
 import os
 
 
@@ -31,7 +31,7 @@ class Complete(QtWidgets.QWidget):
         planes_for_exec = self.lk.planes_for_exec
         for plane in planes_for_exec:
             btn = QtWidgets.QPushButton()
-            btn.plane = PlaneM.get(PlaneM.id == plane['id'])
+            btn.plane = PlaneM.get(PlaneM.id == plane)
             btn.setText(btn.plane.tail_number)
             btn.setFixedWidth(40)
             btn.clicked.connect(self.open_plane_complete)
@@ -50,7 +50,7 @@ class Complete(QtWidgets.QWidget):
             row = 0
             col = 0
             for plane_btn in self.plane_btns:
-                if plane_btn.plane.unit == unit.id:
+                if plane_btn.plane.unit.id == unit.id:
                     if col < 3:
                         layout_planes.addWidget(plane_btn, row, col)
                         col += 1
@@ -109,38 +109,38 @@ class Complete(QtWidgets.QWidget):
 
     def open_plane_complete(self):
         sender = self.sender()
-        self.plane_complete = EditComplete(sender.plane, self.lk, self.db)
+        self.plane_complete = EditComplete(sender.plane, self.lk)
         self.plane_complete.show()
 
 
 class EditComplete(QtWidgets.QWidget):
-    def __init__(self, pl, listk, db, parent=None):
+    def __init__(self, plane, listk, parent=None):
         super().__init__(parent)
-        self.db = db
-        self.compl = self.db.get_complete(listk, pl)
+        self.compl = CompleteLM.select(CompleteLM.id_subunit).where(CompleteLM.id_plane == plane.id, CompleteLM.id_list == listk.id)
         self.lk = listk
-        self.plane = pl
+        self.plane = plane
         self.resize(250, 200)
-        self.setWindowTitle(f'Самолет №{self.plane.bort_num}')
+        self.setWindowTitle(f'Самолет №{self.plane.tail_number}')
         self.main_layout = QtWidgets.QVBoxLayout()
         self.setLayout(self.main_layout)
-        self.specs = self.db.load_all_spec()
+        self.subunits = SubunitM.select()
         self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
-        for sp in self.specs:
-            btn = QtWidgets.QPushButton(sp.name_spec)
-            btn.spec = sp
+        for su in self.subunits:
+            btn = QtWidgets.QPushButton(su.name)
+            btn.spec = su
             btn.setCheckable(True)
             btn.lk = self.lk
             btn.clicked.connect(self.handle_spec)
-            if btn.spec.id_spec in btn.lk.komu_spec:
+            if btn.spec.id in btn.lk.specialties_for_exec:
                 self.main_layout.addWidget(btn)
-                if int(btn.spec.id_spec) in self.compl:
+                if int(btn.spec.id) in self.compl:
                     btn.setChecked(True)
 
     def handle_spec(self):
         sender = self.sender()
         if sender.isChecked():
-            self.db.add_complete(self.lk, self.plane, sender.spec)
+            CompleteLM.create(id_list=self.lk.id, id_plane=self.plane.id, id_subunit=sender.spec.id)
         else:
-            self.db.del_complete(self.lk, self.plane, sender.spec)
+            compl = CompleteLM.get(id_list=self.lk.id, id_plane=self.plane.id, id_subunit=sender.spec.id)
+            compl.delete_instance()
             
