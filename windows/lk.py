@@ -190,15 +190,17 @@ class AddLk(QtWidgets.QWidget):
 
     def add_lk(self):
         """Добавляем лист контроля в базу данных"""
-        self.lk.telegram = self.ui.TlgLineEdit.text()
-        self.lk.date_telegram = self.ui.TlgDateEdit.date().toPyDate()
-        self.lk.date_deadline = self.ui.SrokDateEdit.date().toPyDate()
-        self.lk.description = self.ui.textEdit.toPlainText()
-        self.lk.number_lk = self.ui.LkLineEdit.text()
-        self.lk.planes_for_exec = self.pack_planes_for_exec()
-        self.lk.specialties_for_exec = self.pack_subunit_to_exec()
-        self.lk.planes_on_create = self.pack_planes_on_create()
-        self.lk.save()
+        ListControlM.create(
+            telegram=self.ui.TlgLineEdit.text(),
+            date_telegram=self.ui.TlgDateEdit.date().toPyDate(),
+            date_deadline=self.ui.SrokDateEdit.date().toPyDate(),
+            description=self.ui.textEdit.toPlainText(),
+            number_lk=self.ui.LkLineEdit.text(),
+            planes_for_exec=self.pack_planes_for_exec(),
+            specialties_for_exec=self.pack_subunit_to_exec(),
+            planes_on_create=self.pack_planes_on_create(),
+            complete_flag=False
+        )
         self.close()
 
     @staticmethod

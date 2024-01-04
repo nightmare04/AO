@@ -159,7 +159,7 @@ class MainWindow(QtWidgets.QMainWindow):
         not_done = []
         for plane_id in listk.planes_for_exec:
             plane = PlaneM.get(PlaneM.id == plane_id)
-            if not len(CompleteLM.select().where(CompleteLM.id_plane == plane_id)) == len(listk.specialties_for_exec):
+            if not len(CompleteLM.select().where(CompleteLM.id_plane == plane_id, CompleteLM.id_list == listk.id)) == len(listk.specialties_for_exec):
                 not_done.append(plane.tail_number)
 
         if len(not_done) == 0:
