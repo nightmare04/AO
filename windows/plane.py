@@ -24,6 +24,7 @@ class SetupPlane(QtWidgets.QWidget):
         self.close_btn.clicked.connect(self.close)
         self.btns_layout.addWidget(self.add_btn)
         self.btns_layout.addWidget(self.close_btn)
+        self.default_unit = ''
 
     def event(self, e):
         if e.type() == QtCore.QEvent.Type.WindowActivate:
@@ -32,7 +33,7 @@ class SetupPlane(QtWidgets.QWidget):
 
     def init_table(self):
         self.table.setColumnCount(4)
-        self.table.setHorizontalHeaderLabels(('Тип', 'Бортовой номер', 'Заводской номер', ''))
+        self.table.setHorizontalHeaderLabels(('Тип', 'Бортовой номер', 'Подразделение', ''))
 
     def fill_table(self):
         planes = PlaneM.select().where(PlaneM.deleted == False).join(PlaneTypeM)
@@ -44,7 +45,7 @@ class SetupPlane(QtWidgets.QWidget):
             btn.plane = p
             self.table.setItem(row, 0, QtWidgets.QTableWidgetItem(str(p.plane_type.name)))
             self.table.setItem(row, 1, QtWidgets.QTableWidgetItem(str(p.tail_number)))
-            self.table.setItem(row, 2, QtWidgets.QTableWidgetItem(str(p.factory_number)))
+            self.table.setItem(row, 2, QtWidgets.QTableWidgetItem(str(p.unit.name)))
             self.table.setCellWidget(row, 3, btn)
 
             row += 1

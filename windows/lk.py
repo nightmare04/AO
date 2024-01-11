@@ -279,7 +279,15 @@ class EditLK(AddLk):
                 spec_btn.setChecked(True)
 
     def save_lk(self):
-        self.add_lk()
+        self.lk.telegram = self.ui.TlgLineEdit.text()
+        self.lk.date_telegram = self.ui.TlgDateEdit.date().toPyDate()
+        self.lk.date_deadline = self.ui.SrokDateEdit.date().toPyDate()
+        self.lk.description = self.ui.textEdit.toPlainText()
+        self.lk.number_lk = self.ui.LkLineEdit.text()
+        self.lk.planes_for_exec = self.pack_planes_for_exec()
+        self.lk.specialties_for_exec = self.pack_subunit_to_exec()
+        self.lk.save()
+        self.close()
 
     def delete_lk(self):
         self.lk.delete_instance()

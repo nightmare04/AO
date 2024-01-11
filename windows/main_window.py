@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import QVBoxLayout, QPushButton, QTableWidgetItem, QTableWi
 from ui import Ui_MainWindow
 from modules import Database, ClickQlabel, CheckM, ListControlM, CompleteLM, PlaneM
 from datetime import datetime
-from windows import EditLK, AddLk, SetupPodr, SetupSpec, SetupType, SetupPlane, Complete, Listlk, Checks
+from windows import EditLK, AddLk, SetupPodr, SetupSpec, SetupType, SetupPlane, Complete, Listlk, Checks, EditCheck
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -52,8 +52,8 @@ class MainWindow(QtWidgets.QMainWindow):
             last_check = QDate(ch.last_check)
             next_check = self.add_period(last_check, ch.period)
             ost = (next_check.toPyDate() - datetime.date(datetime.today())).days + 1
-            label = ClickQlabel(f'Следующая проверка {ch.name}: {next_check.toString('dd.MM.yyyy')}, '
-                                f'осталось {ost} дней')
+            label = ClickQlabel(f"Следующая проверка {ch.name}:{next_check.toString('dd.MM.yyyy')}"
+                                f" осталось {ost} дня/дней")
             label.check = ch
             label.clicked.connect(self.open_edit_check)
             self.checks_layout.addWidget(label)
@@ -146,8 +146,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
             self.ui.tableWidget.setItem(row, 0, QTableWidgetItem(str(listk.id)))
             self.ui.tableWidget.setItem(row, 1, QTableWidgetItem(str(listk.telegram)))
-            self.ui.tableWidget.setItem(row, 2, QTableWidgetItem(str(listk.date_telegram)))
-            self.ui.tableWidget.setItem(row, 3, QTableWidgetItem(str(listk.date_deadline)))
+            self.ui.tableWidget.setItem(row, 2, QTableWidgetItem(str(listk.date_telegram.strftime("%d.%m.%Y"))))
+            self.ui.tableWidget.setItem(row, 3, QTableWidgetItem(str(listk.date_deadline.strftime("%d.%m.%Y"))))
             self.ui.tableWidget.setItem(row, 4, QTableWidgetItem(str(listk.number_lk)))
             self.ui.tableWidget.setItem(row, 5, ost_wid)
             self.ui.tableWidget.setItem(row, 6, QTableWidgetItem(self.calc_nevyp(listk)))
@@ -159,7 +159,9 @@ class MainWindow(QtWidgets.QMainWindow):
         not_done = []
         for plane_id in listk.planes_for_exec:
             plane = PlaneM.get(PlaneM.id == plane_id)
-            if not len(CompleteLM.select().where(CompleteLM.id_plane == plane_id, CompleteLM.id_list == listk.id)) == len(listk.specialties_for_exec):
+            if not len(CompleteLM.select().where(
+                    CompleteLM.id_plane == plane_id,
+                    CompleteLM.id_list == listk.id)) == len(listk.specialties_for_exec):
                 not_done.append(plane.tail_number)
 
         if len(not_done) == 0:

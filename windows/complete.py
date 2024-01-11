@@ -86,9 +86,9 @@ class Complete(QtWidgets.QWidget):
 
     def create_doc(self):
         context = {
-            'tlg': str(self.lk.tlg),
-            'date_tlg': str(self.lk.date_tlg),
-            'lk': str(self.lk.lk),
+            'tlg': str(self.lk.telegram),
+            'date_tlg': str(self.lk.date_telegram.strftime("%d.%m.%Y")),
+            'lk': str(self.lk.number_lk),
             'today': datetime.today().strftime("%d.%m.%Y")
         }
 

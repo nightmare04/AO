@@ -2,10 +2,11 @@ from PyQt6 import QtWidgets, QtCore
 from PyQt6.QtWidgets import QPushButton, QTableWidget, QTableWidgetItem, QGridLayout, QLabel, QLineEdit, QCheckBox
 from modules import UnitM
 
+
 class SetupPodr(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
-        self.resize(240, 400)
+        self.resize(280, 400)
         self.add_form = None
         self.change_form = None
         self.setWindowTitle("Подразделения")
@@ -75,6 +76,7 @@ class AddPodr(QtWidgets.QWidget):
 
         self.planes_label = QLabel("выполняет работы?:")
         self.with_planes = QCheckBox('')
+        self.with_planes.setChecked(True)
         self.main_layout.addWidget(self.planes_label, 1, 0)
         self.main_layout.addWidget(self.with_planes, 1, 1)
 
