@@ -1,5 +1,6 @@
 from PyQt6 import QtWidgets, QtCore
 from modules import AgregateM, SystemM, DefectiveM, RemovedM, PlaneTypeM
+from .agregate import Agregate
 
 
 class Systems(QtWidgets.QWidget):
@@ -14,8 +15,8 @@ class Systems(QtWidgets.QWidget):
 
         self.table = QtWidgets.QTableWidget()
         self.main_layout.addWidget(self.table)
-        self.table.setColumnCount(3)
-        self.table.setHorizontalHeaderLabels(['Название', 'Тип самолета', ''])
+        self.table.setColumnCount(4)
+        self.table.setHorizontalHeaderLabels(['Название', 'Тип самолета', '', ''])
         self.table.sortByColumn(1, QtCore.Qt.SortOrder.AscendingOrder)
         self.fill_table()
 
@@ -23,27 +24,46 @@ class Systems(QtWidgets.QWidget):
         self.add_btn.clicked.connect(self.add_system)
         self.main_layout.addWidget(self.add_btn)
 
+    def event(self, e):
+        if e.type() == QtCore.QEvent.Type.WindowActivate:
+            self.fill_table()
+        return QtWidgets.QWidget.event(self, e)
+
     def add_system(self):
         self.new_form = AddSystem()
         self.new_form.show()
 
     def fill_table(self):
-        systems = SystemM.select(SystemM.name, PlaneTypeM.name).join(PlaneTypeM)
+        systems = SystemM.select().join(PlaneTypeM)
         self.table.setRowCount(len(systems))
         row = 0
         for system in systems:
             system_name = QtWidgets.QTableWidgetItem(system.name)
             plane_type = QtWidgets.QTableWidgetItem(system.plane_type.name)
-            btn = QtWidgets.QPushButton('Изменить')
-            btn.clicked.connect(self.change_system)
-            btn.system = system
+
+            btn_chg = QtWidgets.QPushButton('Изменить')
+            btn_chg.clicked.connect(self.change_system)
+            btn_chg.system = system
+
+            btn_agr = QtWidgets.QPushButton('Блоки/Агр')
+            btn_agr.clicked.connect(self.open_agr)
+            btn_agr.system = system
+
             self.table.setItem(row, 0, system_name)
             self.table.setItem(row, 1, plane_type)
-            self.table.setCellWidget(row, 2, btn)
+            self.table.setCellWidget(row, 2, btn_chg)
+            self.table.setCellWidget(row, 3, btn_agr)
             row += 1
 
     def change_system(self):
-        pass
+        sender = self.sender()
+        self.new_form = ChangeSystem(sender.system)
+        self.new_form.show()
+
+    def open_agr(self):
+        sender = self.sender()
+        self.new_form = Agregate(sender.system)
+        self.new_form.show()
 
 
 class AddSystem(QtWidgets.QWidget):
@@ -75,4 +95,30 @@ class AddSystem(QtWidgets.QWidget):
         new_system.name = self.name_edit.text()
         new_system.plane_type = PlaneTypeM.get(PlaneTypeM.name == self.type_select.currentText()).id
         new_system.save()
+        self.close()
+
+
+class ChangeSystem(AddSystem):
+    def __init__(self, system):
+        super().__init__()
+        self.system = system
+        self.setWindowTitle('Изменить систему')
+        self.name_edit.setText(self.system.name)
+        self.type_select.setCurrentText(PlaneTypeM.get(PlaneTypeM.id == self.system.plane_type.id).name)
+        self.add_btn.setText('Сохранить')
+        self.add_btn.clicked.disconnect()
+        self.add_btn.clicked.connect(self.save_system)
+
+        self.del_btn = QtWidgets.QPushButton('Удалить')
+        self.del_btn.clicked.connect(self.del_system)
+        self.main_layout.addWidget(self.del_btn, 3, 0, 1, 2)
+
+    def del_system(self):
+        self.system.delete_instance()
+        self.close()
+
+    def save_system(self):
+        self.system.name = self.name_edit.text()
+        self.system.plane_type = PlaneTypeM.get(PlaneTypeM.name == self.type_select.currentText()).id
+        self.system.save()
         self.close()
