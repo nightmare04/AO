@@ -1,4 +1,4 @@
-# Form implementation generated from reading ui file '.\ui\main.ui'
+# Form implementation generated from reading ui file 'main.ui'
 #
 # Created by: PyQt6 UI code generator 6.6.1
 #
@@ -37,7 +37,7 @@ class Ui_MainWindow(object):
         self.main_layout.addWidget(self.checks_groupbox)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(parent=MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 23))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 24))
         self.menubar.setObjectName("menubar")
         self.menu = QtWidgets.QMenu(parent=self.menubar)
         self.menu.setObjectName("menu")
@@ -47,6 +47,8 @@ class Ui_MainWindow(object):
         self.menu_3.setObjectName("menu_3")
         self.menu_4 = QtWidgets.QMenu(parent=self.menubar)
         self.menu_4.setObjectName("menu_4")
+        self.menu_5 = QtWidgets.QMenu(parent=self.menubar)
+        self.menu_5.setObjectName("menu_5")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(parent=MainWindow)
         self.statusbar.setObjectName("statusbar")
@@ -67,6 +69,12 @@ class Ui_MainWindow(object):
         self.types_setup_action.setObjectName("types_setup_action")
         self.checks_setup_action = QtGui.QAction(parent=MainWindow)
         self.checks_setup_action.setObjectName("checks_setup_action")
+        self.action_3 = QtGui.QAction(parent=MainWindow)
+        self.action_3.setObjectName("action_3")
+        self.system_action = QtGui.QAction(parent=MainWindow)
+        self.system_action.setObjectName("system_action")
+        self.action_5 = QtGui.QAction(parent=MainWindow)
+        self.action_5.setObjectName("action_5")
         self.menu.addAction(self.action)
         self.menu.addAction(self.action_2)
         self.menu_2.addAction(self.lk_action)
@@ -75,10 +83,14 @@ class Ui_MainWindow(object):
         self.menu_4.addAction(self.plane_setup_action)
         self.menu_4.addAction(self.spec_setup_action)
         self.menu_4.addAction(self.checks_setup_action)
+        self.menu_5.addAction(self.action_3)
+        self.menu_5.addAction(self.system_action)
+        self.menu_5.addAction(self.action_5)
         self.menubar.addAction(self.menu.menuAction())
         self.menubar.addAction(self.menu_2.menuAction())
         self.menubar.addAction(self.menu_4.menuAction())
         self.menubar.addAction(self.menu_3.menuAction())
+        self.menubar.addAction(self.menu_5.menuAction())
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -93,6 +105,7 @@ class Ui_MainWindow(object):
         self.menu_2.setTitle(_translate("MainWindow", "Листы контроля"))
         self.menu_3.setTitle(_translate("MainWindow", "О программе"))
         self.menu_4.setTitle(_translate("MainWindow", "Настройки"))
+        self.menu_5.setTitle(_translate("MainWindow", "Исправность"))
         self.action.setText(_translate("MainWindow", "Экспорт"))
         self.action_2.setText(_translate("MainWindow", "Настройки"))
         self.lk_action.setText(_translate("MainWindow", "Листы контроля"))
@@ -101,3 +114,6 @@ class Ui_MainWindow(object):
         self.plane_setup_action.setText(_translate("MainWindow", "Самолеты"))
         self.types_setup_action.setText(_translate("MainWindow", "Типы самолетов"))
         self.checks_setup_action.setText(_translate("MainWindow", "Проверки"))
+        self.action_3.setText(_translate("MainWindow", "Исправность"))
+        self.system_action.setText(_translate("MainWindow", "Системы"))
+        self.action_5.setText(_translate("MainWindow", "Блоки \\ Агрегаты"))

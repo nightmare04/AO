@@ -1,6 +1,7 @@
 from PyQt6 import QtWidgets, QtGui
-from windows import MainWindow
+
 from modules.database import create_tables
+from windows import MainWindow
 
 
 def except_hook(cls, exception, traceback):

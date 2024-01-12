@@ -55,7 +55,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>23</height>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu">
@@ -86,10 +86,19 @@
     <addaction name="spec_setup_action"/>
     <addaction name="checks_setup_action"/>
    </widget>
+   <widget class="QMenu" name="menu_5">
+    <property name="title">
+     <string>Исправность</string>
+    </property>
+    <addaction name="action_3"/>
+    <addaction name="system_action"/>
+    <addaction name="action_5"/>
+   </widget>
    <addaction name="menu"/>
    <addaction name="menu_2"/>
    <addaction name="menu_4"/>
    <addaction name="menu_3"/>
+   <addaction name="menu_5"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="action">
@@ -130,6 +139,21 @@
   <action name="checks_setup_action">
    <property name="text">
     <string>Проверки</string>
+   </property>
+  </action>
+  <action name="action_3">
+   <property name="text">
+    <string>Исправность</string>
+   </property>
+  </action>
+  <action name="system_action">
+   <property name="text">
+    <string>Системы</string>
+   </property>
+  </action>
+  <action name="action_5">
+   <property name="text">
+    <string>Блоки \ Агрегаты</string>
    </property>
   </action>
  </widget>

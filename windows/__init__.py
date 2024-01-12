@@ -6,4 +6,5 @@ from .list_lk import *
 from .checks import *
 from .complete import *
 from .type import *
+from .conditions import *
 from .main_window import *

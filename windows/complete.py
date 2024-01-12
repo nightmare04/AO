@@ -1,9 +1,11 @@
-from PyQt6 import QtWidgets, QtCore
-from ui import Ui_CompleteForm
-from docxtpl import DocxTemplate
-from datetime import datetime
-from modules import ListControlM, PlaneM, UnitM, CompleteLM, SubunitM
 import os
+from datetime import datetime
+
+from PyQt6 import QtWidgets, QtCore
+from docxtpl import DocxTemplate
+
+from modules import ListControlM, PlaneM, UnitM, CompleteLM, SubunitM
+from ui import Ui_CompleteForm
 
 
 class Complete(QtWidgets.QWidget):

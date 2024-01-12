@@ -86,12 +86,41 @@ class CompleteLM(BaseModel):
         primary_key = CompositeKey('id_list', 'id_plane', 'id_subunit')
 
 
+class SystemM(BaseModel):
+    id = PrimaryKeyField(null=False)
+    plane_type = ForeignKeyField(PlaneTypeM, backref='systems', on_delete='cascade')
+    name = CharField(max_length=30, null=False)
+
+
+class AgregateM(BaseModel):
+    id = PrimaryKeyField(null=False)
+    id_system = ForeignKeyField(SystemM, backref='agregates', on_delete='cascade')
+    name = CharField(max_length=30, null=False)
+    amount = IntegerField(default=1)
+
+
+class RemovedM(BaseModel):
+    id = PrimaryKeyField(null=False)
+    id_plane = ForeignKeyField(PlaneM, backref='removes', on_delete='cascade')
+    id_agregate = ForeignKeyField(AgregateM, backref='agregates', on_delete='cascade')
+    agr_number = CharField(max_length=30)
+    note = CharField(max_length=100)
+
+
+class DefectiveM(BaseModel):
+    id = PrimaryKeyField(null=False)
+    id_plane = ForeignKeyField(PlaneM, backref='defectives', on_delete='cascade')
+    id_agregate = ForeignKeyField(AgregateM, backref='agregates', on_delete='cascade')
+    agr_number = CharField(max_length=30)
+
+
 def create_tables():
     with db:
         db.create_tables(
             [
                 PlaneM, PlaneTypeM, UnitM,
                 SubunitM, ListControlM, CompleteLM,
-                CheckM
+                CheckM, SystemM, AgregateM,
+                RemovedM, DefectiveM
             ]
         )
