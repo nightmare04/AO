@@ -38,20 +38,21 @@ class UnitM(BaseModel):
         db_table = 'units'
 
 
-class SubunitM(BaseModel):
-    id = PrimaryKeyField(null=False)
-    name = CharField(max_length=30, unique=True)
-
-    class Meta:
-        db_table = 'subunits'
-
-
 class PlaneTypeM(BaseModel):
     id = PrimaryKeyField(null=False)
     name = CharField(max_length=30, unique=True)
 
     class Meta:
         db_table = 'plane_types'
+
+
+class SubunitM(BaseModel):
+    id = PrimaryKeyField(null=False)
+    plane_type = ForeignKeyField(PlaneTypeM, backref='planes', on_delete='cascade')
+    name = CharField(max_length=30, unique=True)
+
+    class Meta:
+        db_table = 'subunits'
 
 
 class PlaneM(BaseModel):
@@ -88,6 +89,7 @@ class CompleteLM(BaseModel):
 
 class SystemM(BaseModel):
     id = PrimaryKeyField(null=False)
+    subunit_type = ForeignKeyField(SubunitM, backref='subunits', on_delete='cascade')
     plane_type = ForeignKeyField(PlaneTypeM, backref='systems', on_delete='cascade')
     name = CharField(max_length=30, null=False)
 

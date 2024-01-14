@@ -87,7 +87,7 @@
     <property name="title">
      <string>Исправность</string>
     </property>
-    <addaction name="action_3"/>
+    <addaction name="cond_action"/>
     <addaction name="action_4"/>
     <addaction name="action_6"/>
    </widget>
@@ -136,7 +136,7 @@
     <string>Проверки</string>
    </property>
   </action>
-  <action name="action_3">
+  <action name="cond_action">
    <property name="text">
     <string>Исправность</string>
    </property>

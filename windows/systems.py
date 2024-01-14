@@ -1,5 +1,5 @@
 from PyQt6 import QtWidgets, QtCore
-from modules import AgregateM, SystemM, DefectiveM, RemovedM, PlaneTypeM
+from modules import AgregateM, SystemM, DefectiveM, RemovedM, PlaneTypeM, SubunitM
 from .agregate import Agregate
 
 
@@ -81,18 +81,36 @@ class AddSystem(QtWidgets.QWidget):
 
         self.type_label = QtWidgets.QLabel('Выберите тип:')
         self.type_select = QtWidgets.QComboBox()
-        query = list(PlaneTypeM.select(PlaneTypeM.name).execute())
-        self.type_select.addItems(map(lambda q: q.name, query))
+        types_list = list(PlaneTypeM.select(PlaneTypeM.name).execute())
+        types_names = map(lambda q: q.name, types_list)
+        self.type_select.addItems(types_names)
         self.main_layout.addWidget(self.type_label, 1, 0)
         self.main_layout.addWidget(self.type_select, 1, 1)
+        self.type_select.currentTextChanged.connect(self.fill_subunits)
+
+        self.spec_label = QtWidgets.QLabel('Выберите специальность:')
+        self.subunit_select = QtWidgets.QComboBox()
+        self.main_layout.addWidget(self.spec_label, 2, 0)
+        self.main_layout.addWidget(self.subunit_select, 2, 1)
 
         self.add_btn = QtWidgets.QPushButton('Добавить')
         self.add_btn.clicked.connect(self.add_system)
-        self.main_layout.addWidget(self.add_btn, 2, 0, 1, 2)
+        self.main_layout.addWidget(self.add_btn, 3, 0, 1, 2)
+
+        self.fill_subunits()
+
+    def fill_subunits(self):
+        self.subunit_select.clear()
+
+        subunits_list = list(SubunitM.select().where(
+            SubunitM.plane_type == PlaneTypeM.get(PlaneTypeM.name == self.type_select.currentText())))
+        subunits_names = map(lambda q: q.name, subunits_list)
+        self.subunit_select.addItems(subunits_names)
 
     def add_system(self):
         new_system = SystemM()
         new_system.name = self.name_edit.text()
+        new_system.subunit_type = SubunitM.get(SubunitM.name == self.subunit_select.currentText()).id
         new_system.plane_type = PlaneTypeM.get(PlaneTypeM.name == self.type_select.currentText()).id
         new_system.save()
         self.close()

@@ -5,7 +5,8 @@ from PyQt6.QtWidgets import QVBoxLayout, QPushButton, QTableWidgetItem, QTableWi
 from ui import Ui_MainWindow
 from modules import Database, ClickQlabel, CheckM, ListControlM, CompleteLM, PlaneM
 from datetime import datetime
-from windows import Systems, EditLK, AddLk, SetupPodr, SetupSpec, SetupType, SetupPlane, Complete, Listlk, Checks, EditCheck
+from windows import (Systems, EditLK, AddLk, SetupPodr, SetupSubunit, SetupType, SetupPlane,
+                     Complete, Listlk, Checks, EditCheck, Condition)
 
 
 
@@ -35,12 +36,17 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.lk_action.triggered.connect(self.list_lk)
         self.ui.checks_setup_action.triggered.connect(self.open_setup_checks)
         self.ui.system_action.triggered.connect(self.open_setup_system)
+        self.ui.cond_action.triggered.connect(self.open_conditions)
 
     def event(self, e):
         if e.type() == QtCore.QEvent.Type.WindowActivate:
             self.fill_table()
             self.fill_checks()
         return QtWidgets.QWidget.event(self, e)
+
+    def open_conditions(self):
+        self.new_form = Condition()
+        self.new_form.show()
 
     def open_setup_system(self):
         self.new_form = Systems()
@@ -107,7 +113,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.new_form.show()
 
     def open_setup_spec(self):
-        self.new_form = SetupSpec()
+        self.new_form = SetupSubunit()
         self.new_form.show()
 
     def init_table(self):

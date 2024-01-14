@@ -228,7 +228,7 @@ class AddLk(QtWidgets.QWidget):
         subunit = []
         for subunit_btn in self.spec_btns:
             if subunit_btn.isChecked():
-                subunit.append(subunit_btn.spec.id)
+                subunit.append(subunit_btn.subunit.id)
 
         return subunit
 
@@ -275,7 +275,7 @@ class EditLK(AddLk):
 
         for spec_btn in self.spec_btns:
             spec_btn.setChecked(False)
-            if spec_btn.spec.id in self.lk.specialties_for_exec:
+            if spec_btn.subunit.id in self.lk.specialties_for_exec:
                 spec_btn.setChecked(True)
 
     def save_lk(self):
