@@ -98,6 +98,7 @@ class PlaneCondition(QtWidgets.QWidget):
         removes = RemovedM.select().where(RemovedM.id_plane == self.plane.id)
 
         row = 0
+        self.defect_table.setRowCount(len(defects))
         for defect in defects:
             defect: DefectiveM
             name = QtWidgets.QTableWidgetItem(defect.id_agregate.name)
@@ -162,12 +163,13 @@ class AddDefect(QtWidgets.QWidget):
 
         self.agr_number_label = QtWidgets.QLabel('Заводской номер:')
         self.agr_number_edit = QtWidgets.QLineEdit()
-        self.grid_layout.addWidget(self.agr_label, 3, 0)
-        self.grid_layout.addWidget(self.agr_select, 3, 1)
+        self.grid_layout.addWidget(self.agr_number_label, 3, 0)
+        self.grid_layout.addWidget(self.agr_number_edit, 3, 1)
 
         self.add_btn = QtWidgets.QPushButton('Добавить')
         self.add_btn.clicked.connect(self.add_defect)
         self.grid_layout.addWidget(self.add_btn, 4, 0, 1, 2)
+        self.fill_agr()
 
     def change_agr(self):
         self.agr = AgregateM.get(AgregateM.name == self.agr_select.currentText())

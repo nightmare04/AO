@@ -113,7 +113,7 @@ class DefectiveM(BaseModel):
     id = PrimaryKeyField(null=False)
     id_plane = ForeignKeyField(PlaneM, backref='defectives', on_delete='cascade')
     id_agregate = ForeignKeyField(AgregateM, backref='agregates', on_delete='cascade')
-    agr_number = CharField(max_length=30)
+    agr_number = CharField(max_length=30, null=True)
 
 
 def create_tables():
