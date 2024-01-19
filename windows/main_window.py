@@ -5,8 +5,8 @@ from PyQt6.QtWidgets import QVBoxLayout, QPushButton, QTableWidgetItem, QTableWi
 from ui import Ui_MainWindow
 from modules import Database, ClickQlabel, CheckM, ListControlM, CompleteLM, PlaneM
 from datetime import datetime
-from windows import (Systems, EditLK, AddLk, SetupPodr, SetupSubunit, SetupType, SetupPlane,
-                     Complete, Listlk, Checks, EditCheck, Condition)
+from windows import (Systems, EditLK, AddLk, SetupUnit, SetupSubunit, SetupType, SetupPlane,
+                     Complete, Listk, Checks, EditCheck, Condition)
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -96,7 +96,7 @@ class MainWindow(QtWidgets.QMainWindow):
             return next_check
 
     def list_lk(self):
-        self.new_form = Listlk(self)
+        self.new_form = Listk(self)
         self.new_form.show()
 
     def open_setup_plane(self):
@@ -104,7 +104,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.new_form.show()
 
     def open_setup_podr(self):
-        self.new_form = SetupPodr()
+        self.new_form = SetupUnit()
         self.new_form.show()
 
     def open_setup_type(self):

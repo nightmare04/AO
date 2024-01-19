@@ -66,44 +66,44 @@ class AddPlane(QtWidgets.QWidget):
         self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
         self.plane = PlaneM()
         self.types = {}
-        self.podrs = {}
+        self.units = {}
         self.main_layout = QtWidgets.QGridLayout()
         self.setLayout(self.main_layout)
         self.setWindowTitle(f'Добавить самолет')
         self.resize(300, 100)
 
-        self.label = QtWidgets.QLabel('Выберите тип:')
+        self.type_label = QtWidgets.QLabel('Выберите тип:')
         self.type_select = QtWidgets.QComboBox()
         self.add_types_combo()
-        self.main_layout.addWidget(self.label, 0, 0)
+        self.main_layout.addWidget(self.type_label, 0, 0)
         self.main_layout.addWidget(self.type_select, 0, 1)
 
-        self.label = QtWidgets.QLabel('Выберите подразделение:')
-        self.podr_select = QtWidgets.QComboBox()
-        self.add_podr_combo()
-        self.main_layout.addWidget(self.label, 1, 0)
-        self.main_layout.addWidget(self.podr_select, 1, 1)
+        self.unit_label = QtWidgets.QLabel('Выберите подразделение:')
+        self.unit_select = QtWidgets.QComboBox()
+        self.add_unit_combo()
+        self.main_layout.addWidget(self.unit_label, 1, 0)
+        self.main_layout.addWidget(self.unit_select, 1, 1)
 
-        self.label = QtWidgets.QLabel('Бортовой номер:')
-        self.bort_num_edit = QtWidgets.QLineEdit()
-        self.main_layout.addWidget(self.label, 2, 0)
-        self.main_layout.addWidget(self.bort_num_edit, 2, 1)
+        self.tail_number_label = QtWidgets.QLabel('Бортовой номер:')
+        self.tail_number_edit = QtWidgets.QLineEdit()
+        self.main_layout.addWidget(self.tail_number_label, 2, 0)
+        self.main_layout.addWidget(self.tail_number_edit, 2, 1)
 
-        self.label = QtWidgets.QLabel('Заводской номер:')
-        self.zav_num_edit = QtWidgets.QLineEdit()
-        self.main_layout.addWidget(self.label, 3, 0)
-        self.main_layout.addWidget(self.zav_num_edit, 3, 1)
+        self.factory_number_label = QtWidgets.QLabel('Заводской номер:')
+        self.factory_number_edit = QtWidgets.QLineEdit()
+        self.main_layout.addWidget(self.factory_number_label, 3, 0)
+        self.main_layout.addWidget(self.factory_number_edit, 3, 1)
 
         self.add_btn = QtWidgets.QPushButton('Добавить')
         self.add_btn.clicked.connect(self.add_plane)
         self.main_layout.addWidget(self.add_btn, 4, 0, 1, 2)
 
-    def add_podr_combo(self):
-        podrs = UnitM.select()
-        res_podr = []
-        for p in podrs:
-            res_podr.append(p.name)
-        self.podr_select.addItems(res_podr)
+    def add_unit_combo(self):
+        units = UnitM.select()
+        res_unit = []
+        for p in units:
+            res_unit.append(p.name)
+        self.unit_select.addItems(res_unit)
 
     def add_types_combo(self):
         types = PlaneTypeM.select()
@@ -113,9 +113,9 @@ class AddPlane(QtWidgets.QWidget):
         self.type_select.addItems(res_type)
 
     def add_plane(self):
-        self.plane.unit = str(UnitM.get(UnitM.name == self.podr_select.currentText()))
+        self.plane.unit = str(UnitM.get(UnitM.name == self.unit_select.currentText()))
         self.plane.plane_type = str(PlaneTypeM.get(PlaneTypeM.name == self.type_select.currentText()))
-        self.plane.tail_number = self.bort_num_edit.text()
+        self.plane.tail_number = self.tail_number_edit.text()
         self.plane.factory_number = self.zav_num_edit.text()
         self.plane.save()
         self.close()
@@ -139,7 +139,7 @@ class EditPlane(AddPlane):
         self.fill_plane()
 
     def fill_plane(self):
-        self.bort_num_edit.setText(str(self.plane.tail_number))
+        self.tail_number_edit.setText(str(self.plane.tail_number))
         self.zav_num_edit.setText(str(self.plane.factory_number))
         self.type_select.setCurrentText(PlaneTypeM.get(PlaneTypeM.id == self.plane.plane_type).name)
         # self.type_select.setCurrentIndex(self.type_select.findText(db.load_type_by_id(self.plane.id_type)))

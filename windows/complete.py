@@ -9,12 +9,12 @@ from ui import Ui_CompleteForm
 
 
 class Complete(QtWidgets.QWidget):
-    def __init__(self, listk):
+    def __init__(self, lk):
         super().__init__()
         self.plane_complete = None
-        self.lk = listk
+        self.lk = lk
         self.lk: ListControlM
-        self.podrs = []
+        self.units = []
         self.plane_btns = []
         self.plane_groups = []
         self.ui = Ui_CompleteForm()
@@ -46,7 +46,7 @@ class Complete(QtWidgets.QWidget):
             groupbox = QtWidgets.QGroupBox(unit.name)
             layout_planes = QtWidgets.QGridLayout()
             groupbox.setLayout(layout_planes)
-            groupbox.podr = unit
+            groupbox.unit = unit
             groupbox.plane_btns = []
 
             row = 0
@@ -117,9 +117,9 @@ class Complete(QtWidgets.QWidget):
 
 
 class EditComplete(QtWidgets.QWidget):
-    def __init__(self, plane, listk, parent=None):
+    def __init__(self, plane, lk, parent=None):
         super().__init__(parent)
-        self.lk = listk
+        self.lk = lk
         self.plane = plane
         self.resize(250, 200)
         self.setWindowTitle(f'Самолет №{self.plane.tail_number}')
