@@ -1,13 +1,12 @@
 from PyQt6 import QtWidgets, QtCore
 from PyQt6.QtWidgets import QPushButton, QTableWidget, QTableWidgetItem, QGridLayout, QLabel, QLineEdit, QCheckBox
-from modules import Podr
+from modules import UnitM
 
 
 class SetupPodr(QtWidgets.QWidget):
-    def __init__(self, db):
+    def __init__(self):
         super().__init__()
-        self.db = db
-        self.resize(240, 400)
+        self.resize(280, 400)
         self.add_form = None
         self.change_form = None
         self.setWindowTitle("Подразделения")
@@ -38,14 +37,14 @@ class SetupPodr(QtWidgets.QWidget):
         self.table.hideColumn(0)
 
     def fill_table(self):
-        podrs = self.db.load_all_podr()
+        podrs = UnitM.select()
         self.table.setRowCount(len(podrs))
         row = 0
         for p in podrs:
             btn = QPushButton('Изменить')
             btn.clicked.connect(self.open_change_podr)
             btn.podr = p
-            self.table.setItem(row, 1, QTableWidgetItem(p.name_podr))
+            self.table.setItem(row, 1, QTableWidgetItem(p.name))
             self.table.setCellWidget(row, 2, btn)
 
             row += 1
@@ -56,16 +55,15 @@ class SetupPodr(QtWidgets.QWidget):
 
     def open_change_podr(self):
         sender = self.sender()
-        self.change_form = EditPodr(sender.podr, self.db)
+        self.change_form = EditPodr(sender.podr)
         self.change_form.show()
 
 
 class AddPodr(QtWidgets.QWidget):
-    def __init__(self, db):
+    def __init__(self):
         super().__init__()
-        self.db = db
         self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
-        self.podr = Podr()
+        self.podr = UnitM()
         self.main_layout = QGridLayout()
         self.setLayout(self.main_layout)
         self.setWindowTitle(f'Добавить подразделение')
@@ -78,6 +76,7 @@ class AddPodr(QtWidgets.QWidget):
 
         self.planes_label = QLabel("выполняет работы?:")
         self.with_planes = QCheckBox('')
+        self.with_planes.setChecked(True)
         self.main_layout.addWidget(self.planes_label, 1, 0)
         self.main_layout.addWidget(self.with_planes, 1, 1)
 
@@ -86,24 +85,26 @@ class AddPodr(QtWidgets.QWidget):
         self.main_layout.addWidget(self.add_btn, 2, 0, 1, 2)
 
     def add_podr(self):
-        self.podr.pack_podr(self)
-        self.db.add_podr(self.podr)
+        podr: UnitM
+        self.podr.name = self.name_edit.text()
+        self.podr.performs_work = self.with_planes.isChecked()
+        self.podr.save()
         self.close()
 
 
 class EditPodr(AddPodr):
-    def __init__(self, p, db):
-        super().__init__(db)
-        self.db = db
+    def __init__(self, p):
+        super().__init__()
         self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
         self.podr = p
+        p: UnitM
         self.setWindowTitle('Изменить подразделение')
         self.add_btn.setText('Сохранить')
 
         self.label.setText('Введите новое имя:')
-        self.name_edit.setText(p.name_podr)
+        self.name_edit.setText(p.name)
 
-        self.with_planes.setChecked(bool(self.podr.with_planes))
+        self.with_planes.setChecked(p.performs_work)
 
         self.add_btn.clicked.disconnect()
         self.add_btn.clicked.connect(self.save_podr)
@@ -113,10 +114,13 @@ class EditPodr(AddPodr):
         self.main_layout.addWidget(self.del_btn, 4, 0, 1, 2)
 
     def save_podr(self):
-        self.podr.pack_podr(self)
-        self.db.update_podr(self.podr)
+        self.podr: UnitM
+        self.podr.name = self.name_edit.text()
+        self.podr.performs_work = self.with_planes.isChecked()
+        self.podr.save()
         self.close()
 
     def del_podr(self):
-        self.db.delete_podr(self.podr.id_podr)
+        self.podr: UnitM
+        self.podr.delete_instance()
         self.close()

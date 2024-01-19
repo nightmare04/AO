@@ -29,5 +29,5 @@ class DragGroupbox(QGroupBox):
 
     def dropEvent(self, e):
         widget = e.source()
-        widget.plane.id_podr = self.podr.id_podr
+        widget.plane.unit = self.unit.id
         self.parent().update_planes()

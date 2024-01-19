@@ -3,9 +3,10 @@ from PyQt6.QtCore import QDate
 from PyQt6.QtGui import QColor
 from PyQt6.QtWidgets import QVBoxLayout, QPushButton, QTableWidgetItem, QTableWidget
 from ui import Ui_MainWindow
-from modules import Database, ClickQlabel
+from modules import Database, ClickQlabel, CheckM, ListControlM, CompleteLM, PlaneM
 from datetime import datetime
-from windows import EditLK, AddLk, SetupPodr, SetupSpec, SetupType, SetupPlane, Complete, Listlk
+from windows import (Systems, EditLK, AddLk, SetupPodr, SetupSubunit, SetupType, SetupPlane,
+                     Complete, Listlk, Checks, EditCheck, Condition)
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -13,15 +14,12 @@ class MainWindow(QtWidgets.QMainWindow):
         super().__init__()
         # myappid = 'mycompany.myproduct.subproduct.version'
         # ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+        self.checks = None
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.new_form = None
         self.lks = []
-        self.db = Database()
-        self.db.create_connection()
         self.setWindowTitle("Старший инженер по специальности")
-
-        self.checks = []
 
         self.checks_layout = QVBoxLayout()
         self.ui.checks_groupbox.setLayout(self.checks_layout)
@@ -36,6 +34,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.plane_setup_action.triggered.connect(self.open_setup_plane)
         self.ui.lk_action.triggered.connect(self.list_lk)
         self.ui.checks_setup_action.triggered.connect(self.open_setup_checks)
+        self.ui.system_action.triggered.connect(self.open_setup_system)
+        self.ui.cond_action.triggered.connect(self.open_conditions)
 
     def event(self, e):
         if e.type() == QtCore.QEvent.Type.WindowActivate:
@@ -43,20 +43,28 @@ class MainWindow(QtWidgets.QMainWindow):
             self.fill_checks()
         return QtWidgets.QWidget.event(self, e)
 
+    def open_conditions(self):
+        self.new_form = Condition()
+        self.new_form.show()
+
+    def open_setup_system(self):
+        self.new_form = Systems()
+        self.new_form.show()
+
     def open_setup_checks(self):
         self.new_form = Checks()
         self.new_form.show()
 
     def fill_checks(self):
-        self.checks = self.db.load_all_checks()
+        self.checks = CheckM.select()
         self.clear_layout()
 
         for ch in self.checks:
-            last_check = QDate(datetime.strptime(ch.last_check, '%d.%m.%Y'))
+            last_check = QDate(ch.last_check)
             next_check = self.add_period(last_check, ch.period)
             ost = (next_check.toPyDate() - datetime.date(datetime.today())).days + 1
-            label = ClickQlabel(f'Следующая проверка {ch.name_check}: {next_check.toString('dd.MM.yyyy')}, '
-                                f'осталось {ost} дней')
+            label = ClickQlabel(f"Следующая проверка {ch.name}:{next_check.toString('dd.MM.yyyy')}"
+                                f" осталось {ost} дня/дней")
             label.check = ch
             label.clicked.connect(self.open_edit_check)
             self.checks_layout.addWidget(label)
@@ -92,19 +100,19 @@ class MainWindow(QtWidgets.QMainWindow):
         self.new_form.show()
 
     def open_setup_plane(self):
-        self.new_form = SetupPlane(self.db)
+        self.new_form = SetupPlane()
         self.new_form.show()
 
     def open_setup_podr(self):
-        self.new_form = SetupPodr(self.db)
+        self.new_form = SetupPodr()
         self.new_form.show()
 
     def open_setup_type(self):
-        self.new_form = SetupType(self.db)
+        self.new_form = SetupType()
         self.new_form.show()
 
     def open_setup_spec(self):
-        self.new_form = SetupSpec(self.db)
+        self.new_form = SetupSubunit()
         self.new_form.show()
 
     def init_table(self):
@@ -126,55 +134,63 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.tableWidget.setSortingEnabled(True)
 
     def open_complete_form(self, row):
-        listk = self.db.load_lk(self.ui.tableWidget.item(row, 0).text())
-        self.new_form = Complete(listk, self.db)
+        listk = ListControlM.get(ListControlM.id == self.ui.tableWidget.item(row, 0).text())
+        self.new_form = Complete(listk)
         self.new_form.show()
 
     def fill_table(self):
         """Заполняем таблицу долгами"""
-        self.lks = self.db.load_all_uncomplete_lk()
+        self.lks = ListControlM.select().where(ListControlM.complete_flag == False)
         self.ui.tableWidget.setRowCount(len(self.lks))
         row = 0
         for listk in self.lks:
-            if not listk.complete:
-                btn = QPushButton("Изменить")
-                btn.lk = listk
-                btn.clicked.connect(self.open_edit_form)
-                ost = (datetime.strptime(listk.date_vypoln, '%d.%m.%Y') - datetime.today())
-                if ost.days + 1 < 5:
-                    ost_wid = QTableWidgetItem(str(ost.days + 1))
-                    ost_wid.setBackground(QColor("red"))
-                else:
-                    ost_wid = QTableWidgetItem(str(ost.days + 1))
+            listk: ListControlM
+            btn = QPushButton("Изменить")
+            btn.lk = listk
+            btn.clicked.connect(self.open_edit_form)
+            ost = (listk.date_deadline - datetime.today().date())
+            if ost.days + 1 < 5:
+                ost_wid = QTableWidgetItem(str(ost.days + 1))
+                ost_wid.setBackground(QColor("red"))
+            else:
+                ost_wid = QTableWidgetItem(str(ost.days + 1))
 
-                self.ui.tableWidget.setItem(row, 0, QTableWidgetItem(str(listk.id_lk)))
-                self.ui.tableWidget.setItem(row, 1, QTableWidgetItem(str(listk.tlg)))
-                self.ui.tableWidget.setItem(row, 2, QTableWidgetItem(str(listk.date_tlg)))
-                self.ui.tableWidget.setItem(row, 3, QTableWidgetItem(str(listk.date_vypoln)))
-                self.ui.tableWidget.setItem(row, 4, QTableWidgetItem(str(listk.lk)))
-                self.ui.tableWidget.setItem(row, 5, ost_wid)
-                self.ui.tableWidget.setItem(row, 6, QTableWidgetItem(self.calc_nevyp(listk)))
-                self.ui.tableWidget.setCellWidget(row, 7, btn)
-                row += 1
+            self.ui.tableWidget.setItem(row, 0, QTableWidgetItem(str(listk.id)))
+            self.ui.tableWidget.setItem(row, 1, QTableWidgetItem(str(listk.telegram)))
+            self.ui.tableWidget.setItem(row, 2, QTableWidgetItem(str(listk.date_telegram.strftime("%d.%m.%Y"))))
+            self.ui.tableWidget.setItem(row, 3, QTableWidgetItem(str(listk.date_deadline.strftime("%d.%m.%Y"))))
+            self.ui.tableWidget.setItem(row, 4, QTableWidgetItem(str(listk.number_lk)))
+            self.ui.tableWidget.setItem(row, 5, ost_wid)
+            self.ui.tableWidget.setItem(row, 6, QTableWidgetItem(self.calc_nevyp(listk)))
+            self.ui.tableWidget.setCellWidget(row, 7, btn)
+            row += 1
 
-    def calc_nevyp(self, listk) -> str:
-        done, not_done = self.db.get_not_done_planes(listk)
+    @staticmethod
+    def calc_nevyp(listk) -> str:
+        not_done = []
+        for plane_id in listk.planes_for_exec:
+            plane = PlaneM.get(PlaneM.id == plane_id)
+            if not len(CompleteLM.select().where(
+                    CompleteLM.id_plane == plane_id,
+                    CompleteLM.id_list == listk.id)) == len(listk.specialties_for_exec):
+                not_done.append(plane.tail_number)
+
         if len(not_done) == 0:
             return "Выполнено на всех!"
         else:
             text = ''
             for pl in not_done:
-                text += f'{pl.bort_num} ,'
+                text += f'{pl}, '
 
             return text[:-2]
 
     def add_form(self):
         """Открываем новую форму добавления листа контроля"""
-        self.new_form = AddLk(self.db)
+        self.new_form = AddLk()
         self.new_form.show()
 
     def open_edit_form(self):
         """Открытие формы редактирования листа контроля"""
         sender = self.sender()
-        self.new_form = EditLK(sender.lk, self.db)
+        self.new_form = EditLK(sender.lk)
         self.new_form.show()
