@@ -9,7 +9,6 @@ from windows import (Systems, EditLK, AddLk, SetupPodr, SetupSubunit, SetupType,
                      Complete, Listlk, Checks, EditCheck, Condition)
 
 
-
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()

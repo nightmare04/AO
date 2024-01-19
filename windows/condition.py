@@ -6,7 +6,7 @@ class Condition(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle('Выберите самолет')
-        self.resize(700, 500)
+        self.resize(700, 300)
         self.new_form = None
         self.main_layout = QtWidgets.QVBoxLayout()
         self.setLayout(self.main_layout)
@@ -52,6 +52,7 @@ class PlaneCondition(QtWidgets.QWidget):
         self.new_form = None
         self.plane = plane
         self.resize(700, 700)
+        self.showMaximized()
         self.setWindowTitle(f'Самолет №{self.plane.tail_number}')
         self.main_layout = QtWidgets.QVBoxLayout()
         self.setLayout(self.main_layout)
@@ -70,8 +71,8 @@ class PlaneCondition(QtWidgets.QWidget):
         self.defect_add_btn = QtWidgets.QPushButton('Добавить')
         self.defect_add_btn.clicked.connect(self.open_add_defect)
         self.defect_btn_layout.addWidget(self.defect_add_btn)
-        self.defect_table.setColumnCount(5)
-        self.defect_table.setHorizontalHeaderLabels(['Наименование', 'Система', 'Номер', 'Изменить', 'Удалить'])
+        self.defect_table.setColumnCount(4)
+        self.defect_table.setHorizontalHeaderLabels(['Наименование', 'Система', 'Номер', 'Удалить'])
 
         self.removed_layout = QtWidgets.QVBoxLayout()
         self.removed_table = QtWidgets.QTableWidget()
@@ -84,9 +85,9 @@ class PlaneCondition(QtWidgets.QWidget):
         self.removed_groupbox.layout().addWidget(self.removed_table)
         self.removed_layout.addLayout(self.removed_btn_layout)
         self.removed_btn_layout.addWidget(self.removed_add_btn)
-        self.removed_table.setColumnCount(6)
+        self.removed_table.setColumnCount(5)
         self.removed_table.setHorizontalHeaderLabels(['Наименование', 'Система', 'Номер',
-                                                      'Куда снято', 'Изменить', 'Удалить'])
+                                                      'Куда снято', 'Удалить'])
 
     def event(self, e):
         if e.type() == QtCore.QEvent.Type.WindowActivate:
@@ -101,13 +102,45 @@ class PlaneCondition(QtWidgets.QWidget):
         self.defect_table.setRowCount(len(defects))
         for defect in defects:
             defect: DefectiveM
+
+            btn_del = QtWidgets.QPushButton('Удалить')
+            btn_del.defect = defect
+            btn_del.clicked.connect(self.delete_defect)
+
             name = QtWidgets.QTableWidgetItem(defect.id_agregate.name)
             number = QtWidgets.QTableWidgetItem(str(defect.agr_number))
             system = QtWidgets.QTableWidgetItem(defect.id_agregate.id_system.name)
             self.defect_table.setItem(row, 0, name)
             self.defect_table.setItem(row, 1, system)
             self.defect_table.setItem(row, 2, number)
+            self.defect_table.setCellWidget(row, 3, btn_del)
             row += 1
+
+        for remove in removes:
+            remove: RemovedM
+
+            btn_del = QtWidgets.QPushButton('Удалить')
+            btn_del.remove = remove
+            btn_del.clicked.connect(self.delete_remove)
+
+            name = QtWidgets.QTableWidgetItem(remove.id_agregate.name)
+            number = QtWidgets.QTableWidgetItem(str(remove.agr_number))
+            system = QtWidgets.QTableWidgetItem(remove.id_agregate.id_system.name)
+            note = QtWidgets.QTableWidgetItem(remove.note)
+            self.defect_table.setItem(row, 0, name)
+            self.defect_table.setItem(row, 1, system)
+            self.defect_table.setItem(row, 2, number)
+            self.defect_table.setItem(row, 3, note)
+            self.defect_table.setCellWidget(row, 4, btn_del)
+            row += 1
+
+    def delete_defect(self):
+        sender = self.sender()
+        sender.defect.delete_instance()
+        self.fill_table()
+
+    def change_defect(self):
+        pass
 
     def open_add_removed(self):
         pass
@@ -121,7 +154,7 @@ class AddDefect(QtWidgets.QWidget):
     def __init__(self, plane: PlaneM):
         super().__init__()
         self.setWindowTitle('Добавить неисправный блок')
-        self.resize(400, 400)
+        self.resize(300, 400)
         self.plane = plane
         self.main_layout = QtWidgets.QVBoxLayout()
         self.grid_layout = QtWidgets.QGridLayout()

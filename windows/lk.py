@@ -10,7 +10,7 @@ class AddLk(QtWidgets.QWidget):
     def __init__(self, listk=ListControlM()):
         super().__init__()
         self.lk = listk
-        self.spec_btns = []
+        self.subunit_btns = []
         self.plane_type_btns = []
         self.unit_btns = []
         self.plane_btns = []
@@ -176,16 +176,16 @@ class AddLk(QtWidgets.QWidget):
 
     def init_spec(self):
         """Готовим специальности"""
-        all_spec = SubunitM.select()
+        all_subunit = SubunitM.select()
         groupbox = QGroupBox("Специальности")
         layout_spec = QHBoxLayout()
         groupbox.setLayout(layout_spec)
         self.ui.SpecLayout.addWidget(groupbox)
-        for s in all_spec:
+        for s in all_subunit:
             btn = QPushButton(s.name)
             btn.setCheckable(True)
-            btn.spec = s
-            self.spec_btns.append(btn)
+            btn.subunit = s
+            self.subunit_btns.append(btn)
             layout_spec.addWidget(btn)
 
     def add_lk(self):
@@ -226,7 +226,7 @@ class AddLk(QtWidgets.QWidget):
 
     def pack_subunit_to_exec(self):
         subunit = []
-        for subunit_btn in self.spec_btns:
+        for subunit_btn in self.subunit_btns:
             if subunit_btn.isChecked():
                 subunit.append(subunit_btn.subunit.id)
 
@@ -273,7 +273,7 @@ class EditLK(AddLk):
         self.ui.textEdit.setText(self.lk.description)
         self.ui.LkLineEdit.setText(self.lk.number_lk)
 
-        for spec_btn in self.spec_btns:
+        for spec_btn in self.subunit_btns:
             spec_btn.setChecked(False)
             if spec_btn.subunit.id in self.lk.specialties_for_exec:
                 spec_btn.setChecked(True)

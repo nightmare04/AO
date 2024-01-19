@@ -101,12 +101,13 @@ class Complete(QtWidgets.QWidget):
         self.close()
 
     def save_lk(self):
-        if self.ui.complete_checkbox.isChecked():
-            self.lk.complete = 1
+        self.lk.complete_flag = self.ui.complete_checkbox.isChecked()
+
         if not self.ui.otvet_linedit.text() == "":
-            self.lk.otvet = self.ui.otvet_linedit.text()
-            self.lk.date_otvet = self.ui.otvet_dateedit.date().toString('dd.MM.yyyy')
-        self.db.update_lk(self.lk)
+            self.lk.answer = self.ui.otvet_linedit.text()
+            self.lk.answer_date = self.ui.otvet_dateedit.date().toPyDate()
+
+        self.lk.save()
         self.close()
 
     def open_plane_complete(self):
