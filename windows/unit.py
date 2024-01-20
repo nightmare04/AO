@@ -3,7 +3,7 @@ from PyQt6.QtWidgets import QPushButton, QTableWidget, QTableWidgetItem, QGridLa
 from modules import UnitM
 
 
-class SetupUnit(QtWidgets.QWidget):
+class SetupPodr(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
         self.resize(280, 400)
@@ -19,7 +19,7 @@ class SetupUnit(QtWidgets.QWidget):
         self.btns_layout = QtWidgets.QHBoxLayout()
         self.main_layout.addLayout(self.btns_layout)
         self.add_btn = QtWidgets.QPushButton('Добавить')
-        self.add_btn.clicked.connect(self.open_add_unit)
+        self.add_btn.clicked.connect(self.open_add_podr)
         self.close_btn = QtWidgets.QPushButton('Закрыть')
         self.close_btn.clicked.connect(self.close)
         self.btns_layout.addWidget(self.add_btn)
@@ -37,33 +37,33 @@ class SetupUnit(QtWidgets.QWidget):
         self.table.hideColumn(0)
 
     def fill_table(self):
-        units = UnitM.select()
-        self.table.setRowCount(len(units))
+        podrs = UnitM.select()
+        self.table.setRowCount(len(podrs))
         row = 0
-        for p in units:
+        for p in podrs:
             btn = QPushButton('Изменить')
-            btn.clicked.connect(self.open_change_unit)
-            btn.unit = p
+            btn.clicked.connect(self.open_change_podr)
+            btn.podr = p
             self.table.setItem(row, 1, QTableWidgetItem(p.name))
             self.table.setCellWidget(row, 2, btn)
 
             row += 1
 
-    def open_add_unit(self):
-        self.add_form = AddUnit()
+    def open_add_podr(self):
+        self.add_form = AddPodr()
         self.add_form.show()
 
-    def open_change_unit(self):
+    def open_change_podr(self):
         sender = self.sender()
-        self.change_form = EditUnit(sender.podr)
+        self.change_form = EditPodr(sender.podr)
         self.change_form.show()
 
 
-class AddUnit(QtWidgets.QWidget):
+class AddPodr(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
-        self.unit = UnitM()
+        self.podr = UnitM()
         self.main_layout = QGridLayout()
         self.setLayout(self.main_layout)
         self.setWindowTitle(f'Добавить подразделение')
@@ -81,21 +81,22 @@ class AddUnit(QtWidgets.QWidget):
         self.main_layout.addWidget(self.with_planes, 1, 1)
 
         self.add_btn = QPushButton('Добавить')
-        self.add_btn.clicked.connect(self.add_unit)
+        self.add_btn.clicked.connect(self.add_podr)
         self.main_layout.addWidget(self.add_btn, 2, 0, 1, 2)
 
-    def add_unit(self):
-        self.unit.name = self.name_edit.text()
-        self.unit.performs_work = self.with_planes.isChecked()
-        self.unit.save()
+    def add_podr(self):
+        podr: UnitM
+        self.podr.name = self.name_edit.text()
+        self.podr.performs_work = self.with_planes.isChecked()
+        self.podr.save()
         self.close()
 
 
-class EditUnit(AddUnit):
+class EditPodr(AddPodr):
     def __init__(self, p):
         super().__init__()
         self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
-        self.unit = p
+        self.podr = p
         p: UnitM
         self.setWindowTitle('Изменить подразделение')
         self.add_btn.setText('Сохранить')
@@ -106,20 +107,20 @@ class EditUnit(AddUnit):
         self.with_planes.setChecked(p.performs_work)
 
         self.add_btn.clicked.disconnect()
-        self.add_btn.clicked.connect(self.save_unit)
+        self.add_btn.clicked.connect(self.save_podr)
 
         self.del_btn = QPushButton("Удалить")
-        self.del_btn.clicked.connect(self.del_unit)
+        self.del_btn.clicked.connect(self.del_podr)
         self.main_layout.addWidget(self.del_btn, 4, 0, 1, 2)
 
-    def save_unit(self):
-        self.unit: UnitM
-        self.unit.name = self.name_edit.text()
-        self.unit.performs_work = self.with_planes.isChecked()
-        self.unit.save()
+    def save_podr(self):
+        self.podr: UnitM
+        self.podr.name = self.name_edit.text()
+        self.podr.performs_work = self.with_planes.isChecked()
+        self.podr.save()
         self.close()
 
-    def del_unit(self):
-        self.unit: UnitM
-        self.unit.delete_instance()
+    def del_podr(self):
+        self.podr: UnitM
+        self.podr.delete_instance()
         self.close()

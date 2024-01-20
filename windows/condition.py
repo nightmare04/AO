@@ -8,21 +8,23 @@ class Condition(QtWidgets.QWidget):
         self.setWindowTitle('Выберите самолет')
         self.resize(700, 300)
         self.new_form = None
+        self.main_layout = None
+        self.unit_layout = None
+        self.all_units = UnitM.select().order_by(+UnitM.name)
+        self.fill_planes()
+
+    def fill_planes(self):
         self.main_layout = QtWidgets.QVBoxLayout()
         self.setLayout(self.main_layout)
         self.unit_layout = QtWidgets.QHBoxLayout()
         self.main_layout.addLayout(self.unit_layout)
         self.all_units = UnitM.select().order_by(+UnitM.name)
-        self.init_planes()
-
-    def init_planes(self):
         for unit in self.all_units:
             groupbox = QtWidgets.QGroupBox()
             groupbox.setTitle(unit.name)
             plane_layout = QtWidgets.QGridLayout()
             groupbox.setLayout(plane_layout)
             self.unit_layout.addWidget(groupbox)
-
             planes = PlaneM.select().where(PlaneM.unit == unit.id).order_by(+PlaneM.tail_number)
             row = 0
             col = 0
@@ -30,6 +32,13 @@ class Condition(QtWidgets.QWidget):
                 plane_btn = QtWidgets.QPushButton(plane.tail_number)
                 plane_btn.clicked.connect(self.open_plane_cond)
                 plane_btn.plane = plane
+                plane_btn.setStyleSheet('')
+                if (len(DefectiveM.select().where(DefectiveM.id_plane == plane.id)) > 0
+                        or
+                        len(RemovedM.select().where(RemovedM.id_plane == plane.id)) > 0):
+
+                    plane_btn.setStyleSheet("background-color : red")
+
                 plane_btn.setFixedWidth(30)
                 if col < 3:
                     plane_layout.addWidget(plane_btn, row, col)
@@ -43,10 +52,12 @@ class Condition(QtWidgets.QWidget):
     def open_plane_cond(self):
         sender = self.sender()
         self.new_form = PlaneCondition(sender.plane)
-        self.new_form.show()
+        self.new_form.exec()
+        del self.main_layout
+        self.__init__()
 
 
-class PlaneCondition(QtWidgets.QWidget):
+class PlaneCondition(QtWidgets.QDialog):
     def __init__(self, plane: PlaneM):
         super().__init__()
         self.new_form = None
@@ -143,7 +154,8 @@ class PlaneCondition(QtWidgets.QWidget):
         pass
 
     def open_add_removed(self):
-        pass
+        self.new_form = AddRemoved(self.plane)
+        self.new_form.show()
 
     def open_add_defect(self):
         self.new_form = AddDefect(self.plane)
@@ -154,7 +166,7 @@ class AddDefect(QtWidgets.QWidget):
     def __init__(self, plane: PlaneM):
         super().__init__()
         self.setWindowTitle('Добавить неисправный блок')
-        self.resize(300, 400)
+        self.resize(350, 200)
         self.plane = plane
         self.main_layout = QtWidgets.QVBoxLayout()
         self.grid_layout = QtWidgets.QGridLayout()
@@ -185,7 +197,7 @@ class AddDefect(QtWidgets.QWidget):
         self.agr_label = QtWidgets.QLabel('Выберите блок / агрегат:')
         self.agr_select = QtWidgets.QComboBox()
         agrs_list = list(AgregateM.select().
-                         where(
+        where(
             AgregateM.id_system == SystemM.get(SystemM.name == self.system_name_edit.currentText()).id))
         agrs_name = map(lambda q: q.name, agrs_list)
         self.agr_select.addItems(agrs_name)
@@ -201,7 +213,7 @@ class AddDefect(QtWidgets.QWidget):
 
         self.add_btn = QtWidgets.QPushButton('Добавить')
         self.add_btn.clicked.connect(self.add_defect)
-        self.grid_layout.addWidget(self.add_btn, 4, 0, 1, 2)
+        self.grid_layout.addWidget(self.add_btn, 5, 0, 1, 2)
         self.fill_agr()
 
     def change_agr(self):
@@ -230,3 +242,23 @@ class AddDefect(QtWidgets.QWidget):
         new_defect.agr_number = self.agr_number_edit.text()
         new_defect.save()
         self.close()
+
+
+class AddRemoved(AddDefect):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle('Добавить снятый блок')
+        self.add_btn.clicked.disconnect()
+        self.add_btn.clicked.connect(self.add_removed)
+
+    def add_removed(self):
+        new_removed = DefectiveM()
+        new_removed.id_plane = self.plane.id
+        new_removed.id_agregate = self.agr.id
+        new_removed.agr_number = self.agr_number_edit.text()
+        new_removed.save()
+        self.close()
+
+
+
+

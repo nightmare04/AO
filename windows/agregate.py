@@ -1,5 +1,5 @@
 from PyQt6 import QtWidgets, QtCore
-from modules import AgregateM, SystemM
+from modules import AgregateM, SystemM, PlaneTypeM
 
 
 class Agregate(QtWidgets.QWidget):
@@ -109,6 +109,7 @@ class ChangeAgr(AddAgregate):
 
         self.add_btn.clicked.disconnect()
         self.add_btn.clicked.connect(self.save_agr)
+
 
     def save_agr(self):
         self.agr.name = self.name_edit.text()

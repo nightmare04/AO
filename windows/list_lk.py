@@ -3,7 +3,7 @@ from PyQt6.QtWidgets import QVBoxLayout, QTableWidget, QTableWidgetItem, QPushBu
 from modules import ListControlM
 
 
-class Listk(QtWidgets.QWidget):
+class Listlk(QtWidgets.QWidget):
     def __init__(self, main):
         super().__init__()
         self.main_window = main
