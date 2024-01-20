@@ -245,8 +245,8 @@ class AddDefect(QtWidgets.QWidget):
 
 
 class AddRemoved(AddDefect):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, plane):
+        super().__init__(plane)
         self.setWindowTitle('Добавить снятый блок')
         self.add_btn.clicked.disconnect()
         self.add_btn.clicked.connect(self.add_removed)
