@@ -8,15 +8,14 @@ class Condition(QtWidgets.QWidget):
         self.setWindowTitle('Выберите самолет')
         self.resize(700, 300)
         self.new_form = None
-        self.main_layout = None
         self.unit_layout = None
+        self.all_btn_planes = []
         self.fill_planes()
 
     def fill_planes(self):
-        self.main_layout = QtWidgets.QVBoxLayout()
-        self.setLayout(self.main_layout)
+        self.setLayout(QtWidgets.QVBoxLayout())
         self.unit_layout = QtWidgets.QHBoxLayout()
-        self.main_layout.addLayout(self.unit_layout)
+        self.layout().addLayout(self.unit_layout)
         all_units = UnitM.select().order_by(+UnitM.name)
         for unit in all_units:
             groupbox = QtWidgets.QGroupBox()
@@ -31,14 +30,9 @@ class Condition(QtWidgets.QWidget):
                 plane_btn = QtWidgets.QPushButton(plane.tail_number)
                 plane_btn.clicked.connect(self.open_plane_cond)
                 plane_btn.plane = plane
-                plane_btn.setStyleSheet('')
-                if (len(DefectiveM.select().where(DefectiveM.id_plane == plane.id)) > 0
-                        or
-                        len(RemovedM.select().where(RemovedM.id_plane == plane.id)) > 0):
-
-                    plane_btn.setStyleSheet("background-color : red")
-
                 plane_btn.setFixedWidth(30)
+                self.all_btn_planes.append(plane_btn)
+                self.check_plane(plane_btn)
                 if col < 3:
                     plane_layout.addWidget(plane_btn, row, col)
                     col += 1
@@ -52,8 +46,21 @@ class Condition(QtWidgets.QWidget):
         sender = self.sender()
         self.new_form = PlaneCondition(sender.plane)
         self.new_form.exec()
-        del self.main_layout
-        self.__init__()
+
+    @staticmethod
+    def check_plane(btn):
+        if (len(DefectiveM.select().where(DefectiveM.id_plane == btn.plane.id)) > 0
+                or
+                len(RemovedM.select().where(RemovedM.id_plane == btn.plane.id)) > 0):
+
+            btn.setStyleSheet("background-color : red")
+        else:
+            btn.setStyleSheet("background-color : green")
+
+    def update_planes(self):
+        for plane_btn in self.all_btn_planes:
+            self.check_plane(plane_btn)
+
 
 
 class PlaneCondition(QtWidgets.QDialog):
