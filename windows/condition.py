@@ -129,6 +129,9 @@ class PlaneCondition(QtWidgets.QDialog):
             self.defect_table.setCellWidget(row, 3, btn_del)
             row += 1
 
+        row = 0
+        self.removed_table.setRowCount(len(removes))
+
         for remove in removes:
             remove: RemovedM
 
@@ -140,16 +143,21 @@ class PlaneCondition(QtWidgets.QDialog):
             number = QtWidgets.QTableWidgetItem(str(remove.agr_number))
             system = QtWidgets.QTableWidgetItem(remove.id_agregate.id_system.name)
             note = QtWidgets.QTableWidgetItem(remove.note)
-            self.defect_table.setItem(row, 0, name)
-            self.defect_table.setItem(row, 1, system)
-            self.defect_table.setItem(row, 2, number)
-            self.defect_table.setItem(row, 3, note)
-            self.defect_table.setCellWidget(row, 4, btn_del)
+            self.removed_table.setItem(row, 0, name)
+            self.removed_table.setItem(row, 1, system)
+            self.removed_table.setItem(row, 2, number)
+            self.removed_table.setItem(row, 3, note)
+            self.removed_table.setCellWidget(row, 4, btn_del)
             row += 1
 
     def delete_defect(self):
         sender = self.sender()
         sender.defect.delete_instance()
+        self.fill_table()
+
+    def delete_remove(self):
+        sender = self.sender()
+        sender.remove.delete_instance()
         self.fill_table()
 
     def change_defect(self):
@@ -188,11 +196,11 @@ class AddDefect(QtWidgets.QDialog):
 
         self.system_name_label = QtWidgets.QLabel('Система:')
         self.system_name_edit = QtWidgets.QComboBox()
-        systems_list = list(SystemM.select().
-                            where(SystemM.plane_type == self.plane.plane_type,
+        systems_list = list(SystemM.select()
+                            .where(SystemM.plane_type == self.plane.plane_type,
                                   SystemM.subunit_type == SubunitM.get(SubunitM.name ==
                                                                        self.subunit_name_edit.currentText()).id))
-        systems_name = map(lambda q: q.name, systems_list)
+        systems_name = map(lambda system: system.name, systems_list)
         self.system_name_edit.addItems(systems_name)
         self.grid_layout.addWidget(self.system_name_label, 1, 0)
         self.grid_layout.addWidget(self.system_name_edit, 1, 1)
@@ -201,15 +209,12 @@ class AddDefect(QtWidgets.QDialog):
         self.agr_label = QtWidgets.QLabel('Выберите блок / агрегат:')
         self.agr_select = QtWidgets.QComboBox()
         agrs_list = list(AgregateM.select()
-                         .where(
-            AgregateM.id_system == SystemM.get(SystemM.name == self.system_name_edit.currentText()).id
-                            ))
+                         .where(AgregateM.id_system == SystemM.get(SystemM.name ==
+                                                                   self.system_name_edit.currentText()).id))
         agrs_name = map(lambda q: q.name, agrs_list)
         self.agr_select.addItems(agrs_name)
-        self.agr_select.currentTextChanged.connect(self.change_agr)
         self.grid_layout.addWidget(self.agr_label, 2, 0)
         self.grid_layout.addWidget(self.agr_select, 2, 1)
-        self.agr = None
 
         self.agr_number_label = QtWidgets.QLabel('Заводской номер:')
         self.agr_number_edit = QtWidgets.QLineEdit()
@@ -219,10 +224,6 @@ class AddDefect(QtWidgets.QDialog):
         self.add_btn = QtWidgets.QPushButton('Добавить')
         self.add_btn.clicked.connect(self.add_defect)
         self.grid_layout.addWidget(self.add_btn, 5, 0, 1, 2)
-        self.fill_agr()
-
-    def change_agr(self):
-        self.agr = AgregateM.get(AgregateM.name == self.agr_select.currentText())
 
     def fill_systems(self):
         self.system_name_edit.clear()
@@ -243,7 +244,7 @@ class AddDefect(QtWidgets.QDialog):
     def add_defect(self):
         new_defect = DefectiveM()
         new_defect.id_plane = self.plane.id
-        new_defect.id_agregate = self.agr.id
+        new_defect.id_agregate = AgregateM.get(AgregateM.name == self.agr_select.currentText()).id
         new_defect.agr_number = self.agr_number_edit.text()
         new_defect.save()
         self.close()
@@ -256,10 +257,16 @@ class AddRemoved(AddDefect):
         self.add_btn.clicked.disconnect()
         self.add_btn.clicked.connect(self.add_removed)
 
+        self.note_label = QtWidgets.QLabel('Куда снято:')
+        self.note_edit = QtWidgets.QLineEdit()
+        self.grid_layout.addWidget(self.note_label, 4, 0)
+        self.grid_layout.addWidget(self.note_edit, 4, 1)
+
     def add_removed(self):
-        new_removed = DefectiveM()
+        new_removed = RemovedM()
         new_removed.id_plane = self.plane.id
-        new_removed.id_agregate = self.agr.id
+        new_removed.id_agregate = AgregateM.get(AgregateM.name == self.agr_select.currentText()).id
         new_removed.agr_number = self.agr_number_edit.text()
+        new_removed.note = self.note_edit.text()
         new_removed.save()
         self.close()
