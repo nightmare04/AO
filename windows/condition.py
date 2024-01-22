@@ -188,7 +188,7 @@ class AddDefect(QtWidgets.QDialog):
 
         self.system_name_label = QtWidgets.QLabel('Система:')
         self.system_name_edit = QtWidgets.QComboBox()
-        systems_list = list(SystemM.select(SystemM.name).
+        systems_list = list(SystemM.select().
                             where(SystemM.plane_type == self.plane.plane_type,
                                   SystemM.subunit_type == SubunitM.get(SubunitM.name ==
                                                                        self.subunit_name_edit.currentText()).id))
