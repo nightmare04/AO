@@ -100,10 +100,12 @@ class PlaneCondition(QtWidgets.QDialog):
         self.removed_table.setHorizontalHeaderLabels(['Наименование', 'Система', 'Номер',
                                                       'Куда снято', 'Удалить'])
 
-    def event(self, e):
-        if e.type() == QtCore.QEvent.Type.WindowActivate:
-            self.fill_table()
-        return QtWidgets.QWidget.event(self, e)
+        self.fill_table()
+
+    # def event(self, e):
+    #     if e.type() == QtCore.QEvent.Type.WindowActivate:
+    #         self.fill_table()
+    #     return QtWidgets.QWidget.event(self, e)
 
     def fill_table(self):
         defects = DefectiveM.select().where(DefectiveM.id_plane == self.plane.id)
@@ -155,14 +157,16 @@ class PlaneCondition(QtWidgets.QDialog):
 
     def open_add_removed(self):
         self.new_form = AddRemoved(self.plane)
-        self.new_form.show()
+        self.new_form.exec()
+        self.fill_table()
 
     def open_add_defect(self):
         self.new_form = AddDefect(self.plane)
-        self.new_form.show()
+        self.new_form.exec()
+        self.fill_table()
 
 
-class AddDefect(QtWidgets.QWidget):
+class AddDefect(QtWidgets.QDialog):
     def __init__(self, plane: PlaneM):
         super().__init__()
         self.setWindowTitle('Добавить неисправный блок')
@@ -196,9 +200,10 @@ class AddDefect(QtWidgets.QWidget):
 
         self.agr_label = QtWidgets.QLabel('Выберите блок / агрегат:')
         self.agr_select = QtWidgets.QComboBox()
-        agrs_list = list(AgregateM.select().
-        where(
-            AgregateM.id_system == SystemM.get(SystemM.name == self.system_name_edit.currentText()).id))
+        agrs_list = list(AgregateM.select()
+                         .where(
+            AgregateM.id_system == SystemM.get(SystemM.name == self.system_name_edit.currentText()).id
+                            ))
         agrs_name = map(lambda q: q.name, agrs_list)
         self.agr_select.addItems(agrs_name)
         self.agr_select.currentTextChanged.connect(self.change_agr)
@@ -258,7 +263,3 @@ class AddRemoved(AddDefect):
         new_removed.agr_number = self.agr_number_edit.text()
         new_removed.save()
         self.close()
-
-
-
-
