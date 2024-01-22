@@ -10,7 +10,6 @@ class Condition(QtWidgets.QWidget):
         self.new_form = None
         self.main_layout = None
         self.unit_layout = None
-        self.all_units = UnitM.select().order_by(+UnitM.name)
         self.fill_planes()
 
     def fill_planes(self):
@@ -18,8 +17,8 @@ class Condition(QtWidgets.QWidget):
         self.setLayout(self.main_layout)
         self.unit_layout = QtWidgets.QHBoxLayout()
         self.main_layout.addLayout(self.unit_layout)
-        self.all_units = UnitM.select().order_by(+UnitM.name)
-        for unit in self.all_units:
+        all_units = UnitM.select().order_by(+UnitM.name)
+        for unit in all_units:
             groupbox = QtWidgets.QGroupBox()
             groupbox.setTitle(unit.name)
             plane_layout = QtWidgets.QGridLayout()
