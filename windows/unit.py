@@ -3,7 +3,7 @@ from PyQt6.QtWidgets import QPushButton, QTableWidget, QTableWidgetItem, QGridLa
 from modules import UnitM
 
 
-class SetupPodr(QtWidgets.QWidget):
+class SetupUnit(QtWidgets.QDialog):
     def __init__(self):
         super().__init__()
         self.resize(280, 400)

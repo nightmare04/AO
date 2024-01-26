@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import QVBoxLayout, QPushButton, QTableWidgetItem, QTableWi
 from ui import Ui_MainWindow
 from modules import Database, ClickQlabel, CheckM, ListControlM, CompleteLM, PlaneM
 from datetime import datetime
-from windows import (Systems, EditLK, AddLk, SetupPodr, SetupSubunit, SetupType, SetupPlane,
+from windows import (Systems, EditLK, AddLk, SetupUnit, SetupSubunit, SetupType, SetupPlane,
                      Complete, Listlk, Checks, EditCheck, Condition)
 
 
@@ -28,32 +28,35 @@ class MainWindow(QtWidgets.QMainWindow):
         self.show()
 
         self.ui.add_btn.clicked.connect(self.add_form)
-        self.ui.podr_setup_action.triggered.connect(self.open_setup_podr)
-        self.ui.spec_setup_action.triggered.connect(self.open_setup_spec)
+        self.ui.podr_setup_action.triggered.connect(self.open_setup_unit)
+        self.ui.spec_setup_action.triggered.connect(self.open_setup_subunit)
         self.ui.types_setup_action.triggered.connect(self.open_setup_type)
         self.ui.plane_setup_action.triggered.connect(self.open_setup_plane)
         self.ui.lk_action.triggered.connect(self.list_lk)
         self.ui.checks_setup_action.triggered.connect(self.open_setup_checks)
         self.ui.system_action.triggered.connect(self.open_setup_system)
         self.ui.cond_action.triggered.connect(self.open_conditions)
+        self.fill_table()
 
-    def event(self, e):
-        if e.type() == QtCore.QEvent.Type.WindowActivate:
-            self.fill_table()
-            self.fill_checks()
-        return QtWidgets.QWidget.event(self, e)
+    # def event(self, e):
+    #     if e.type() == QtCore.QEvent.Type.WindowActivate:
+    #         self.fill_table()
+    #         self.fill_checks()
+    #     return QtWidgets.QWidget.event(self, e)
 
     def open_conditions(self):
         self.new_form = Condition()
-        self.new_form.show()
+        self.new_form.exec()
+        self.fill_table()
 
     def open_setup_system(self):
         self.new_form = Systems()
-        self.new_form.show()
+        self.new_form.exec()
 
     def open_setup_checks(self):
         self.new_form = Checks()
-        self.new_form.show()
+        self.new_form.exec()
+        self.fill_checks()
 
     def fill_checks(self):
         self.checks = CheckM.select()
@@ -73,7 +76,8 @@ class MainWindow(QtWidgets.QMainWindow):
         sender = self.sender()
         ch = sender.check
         self.new_form = EditCheck(ch)
-        self.new_form.show()
+        self.new_form.exec()
+        self.fill_checks()
 
     def clear_layout(self):
         while self.checks_layout.count():
@@ -97,23 +101,24 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def list_lk(self):
         self.new_form = Listlk(self)
-        self.new_form.show()
+        self.new_form.exec()
+        self.fill_table()
 
     def open_setup_plane(self):
         self.new_form = SetupPlane()
-        self.new_form.show()
+        self.new_form.exec()
 
-    def open_setup_podr(self):
-        self.new_form = SetupPodr()
-        self.new_form.show()
+    def open_setup_unit(self):
+        self.new_form = SetupUnit()
+        self.new_form.exec()
 
     def open_setup_type(self):
         self.new_form = SetupType()
-        self.new_form.show()
+        self.new_form.exec()
 
-    def open_setup_spec(self):
+    def open_setup_subunit(self):
         self.new_form = SetupSubunit()
-        self.new_form.show()
+        self.new_form.exec()
 
     def init_table(self):
         """Описываем параметры таблицы долгов"""
@@ -136,7 +141,8 @@ class MainWindow(QtWidgets.QMainWindow):
     def open_complete_form(self, row):
         listk = ListControlM.get(ListControlM.id == self.ui.tableWidget.item(row, 0).text())
         self.new_form = Complete(listk)
-        self.new_form.show()
+        self.new_form.exec()
+        self.fill_table()
 
     def fill_table(self):
         """Заполняем таблицу долгами"""
@@ -187,10 +193,12 @@ class MainWindow(QtWidgets.QMainWindow):
     def add_form(self):
         """Открываем новую форму добавления листа контроля"""
         self.new_form = AddLk()
-        self.new_form.show()
+        self.new_form.exec()
+        self.fill_table()
 
     def open_edit_form(self):
         """Открытие формы редактирования листа контроля"""
         sender = self.sender()
         self.new_form = EditLK(sender.lk)
-        self.new_form.show()
+        self.new_form.exec()
+        self.fill_table()

@@ -2,7 +2,7 @@ from PyQt6 import QtWidgets, QtCore
 from modules import PlaneM, UnitM, PlaneTypeM
 
 
-class SetupPlane(QtWidgets.QWidget):
+class SetupPlane(QtWidgets.QDialog):
     def __init__(self):
         super().__init__()
         self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)

@@ -3,7 +3,7 @@ from modules import AgregateM, SystemM, DefectiveM, RemovedM, PlaneTypeM, Subuni
 from .agregate import Agregate
 
 
-class Systems(QtWidgets.QWidget):
+class Systems(QtWidgets.QDialog):
     def __init__(self):
         super().__init__()
         self.setWindowTitle('Системы')

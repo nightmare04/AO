@@ -6,7 +6,7 @@ from datetime import datetime
 from modules.database import *
 
 
-class AddLk(QtWidgets.QWidget):
+class AddLk(QtWidgets.QDialog):
     def __init__(self, listk=ListControlM()):
         super().__init__()
         self.lk = listk

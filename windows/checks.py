@@ -7,7 +7,7 @@ from PyQt6.QtWidgets import (QPushButton, QTableWidget, QTableWidgetItem, QLineE
 from modules import CheckM
 
 
-class Checks(QtWidgets.QWidget):
+class Checks(QtWidgets.QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.resize(500, 300)
@@ -69,7 +69,7 @@ class Checks(QtWidgets.QWidget):
         self.new_window.show()
 
 
-class AddCheck(QtWidgets.QWidget):
+class AddCheck(QtWidgets.QDialog):
     def __init__(self):
         super().__init__()
         self.resize(300, 300)

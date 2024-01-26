@@ -8,7 +8,7 @@ from modules import ListControlM, PlaneM, UnitM, CompleteLM, SubunitM
 from ui import Ui_CompleteForm
 
 
-class Complete(QtWidgets.QWidget):
+class Complete(QtWidgets.QDialog):
     def __init__(self, listk):
         super().__init__()
         self.plane_complete = None
@@ -70,10 +70,10 @@ class Complete(QtWidgets.QWidget):
         if self.lk.answer_date:
             self.ui.otvet_dateedit.setDate(self.lk.answer_date)
 
-    def event(self, e):
-        if e.type() == QtCore.QEvent.Type.WindowActivate:
-            self.check_complete()
-        return QtWidgets.QWidget.event(self, e)
+    # def event(self, e):
+    #     if e.type() == QtCore.QEvent.Type.WindowActivate:
+    #         self.check_complete()
+    #     return QtWidgets.QWidget.event(self, e)
 
     def check_complete(self):
         for btn in self.plane_btns:
@@ -113,10 +113,11 @@ class Complete(QtWidgets.QWidget):
     def open_plane_complete(self):
         sender = self.sender()
         self.plane_complete = EditComplete(sender.plane, self.lk)
-        self.plane_complete.show()
+        self.plane_complete.exec()
+        self.check_complete()
 
 
-class EditComplete(QtWidgets.QWidget):
+class EditComplete(QtWidgets.QDialog):
     def __init__(self, plane, listk, parent=None):
         super().__init__(parent)
         self.lk = listk

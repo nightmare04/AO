@@ -2,7 +2,7 @@ from PyQt6 import QtWidgets, QtCore, QtGui
 from modules import UnitM, PlaneM, SystemM, AgregateM, SubunitM, DefectiveM, RemovedM
 
 
-class Condition(QtWidgets.QWidget):
+class Condition(QtWidgets.QDialog):
     def __init__(self):
         super().__init__()
         self.setWindowTitle('Выберите самолет')
