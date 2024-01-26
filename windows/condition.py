@@ -197,22 +197,22 @@ class AddDefect(QtWidgets.QDialog):
         self.subunit_name_edit.currentTextChanged.connect(self.fill_systems)
 
         self.system_name_label = QtWidgets.QLabel('Система:')
-        self.system_name_edit = QtWidgets.QComboBox()
+        self.system_name_combobox = QtWidgets.QComboBox()
         systems_list = list(SystemM.select()
                             .where(SystemM.plane_type == self.plane.plane_type,
                                    SystemM.subunit_type == SubunitM.get(SubunitM.name ==
                                                                         self.subunit_name_edit.currentText()).id))
         systems_name = map(lambda system: system.name, systems_list)
-        self.system_name_edit.addItems(systems_name)
+        self.system_name_combobox.addItems(systems_name)
         self.grid_layout.addWidget(self.system_name_label, 1, 0)
-        self.grid_layout.addWidget(self.system_name_edit, 1, 1)
-        self.system_name_edit.currentTextChanged.connect(self.fill_agr)
+        self.grid_layout.addWidget(self.system_name_combobox, 1, 1)
+        self.system_name_combobox.currentTextChanged.connect(self.fill_agr)
 
         self.agr_label = QtWidgets.QLabel('Выберите блок / агрегат:')
         self.agr_select = QtWidgets.QComboBox()
         agrs_list = list(AgregateM.select()
                          .where(AgregateM.id_system == SystemM.get(SystemM.name ==
-                                                                   self.system_name_edit.currentText()).id))
+                                                                   self.system_name_combobox.currentText()).id))
         agrs_name = map(lambda q: q.name, agrs_list)
         self.agr_select.addItems(agrs_name)
         self.grid_layout.addWidget(self.agr_label, 2, 0)
@@ -227,19 +227,17 @@ class AddDefect(QtWidgets.QDialog):
         self.add_btn.clicked.connect(self.add_defect)
         self.grid_layout.addWidget(self.add_btn, 5, 0, 1, 2)
 
-    def fill_systems(self):
-        self.system_name_edit.clear()
-        systems_list = list(SystemM.select(SystemM.name).
+    def fill_systems(self, subunit_name):
+        # self.system_name_combobox.clear()
+        systems_list = list(SystemM.select().
                             where(SystemM.plane_type == self.plane.plane_type,
-                                  SystemM.subunit_type == SubunitM.get(SubunitM.name ==
-                                                                       self.subunit_name_edit.currentText()).id))
+                                  SystemM.subunit_type == SubunitM.get(SubunitM.name == subunit_name).id))
         systems_name = map(lambda q: q.name, systems_list)
-        self.system_name_edit.addItems(systems_name)
+        self.system_name_combobox.addItems(systems_name)
 
-    def fill_agr(self):
-        self.agr_select.clear()
-        agrs_list = list(AgregateM.select().where(
-            AgregateM.id_system == SystemM.get(SystemM.name == self.system_name_edit.currentText()).id))
+    def fill_agr(self, system_name):
+        # self.agr_select.clear()
+        agrs_list = list(AgregateM.select().where(AgregateM.id_system == SystemM.get(SystemM.name == system_name)))
         agrs_name = map(lambda q: q.name, agrs_list)
         self.agr_select.addItems(agrs_name)
 
