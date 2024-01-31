@@ -70,11 +70,6 @@ class Complete(QtWidgets.QDialog):
         if self.lk.answer_date:
             self.ui.otvet_dateedit.setDate(self.lk.answer_date)
 
-    # def event(self, e):
-    #     if e.type() == QtCore.QEvent.Type.WindowActivate:
-    #         self.check_complete()
-    #     return QtWidgets.QWidget.event(self, e)
-
     def check_complete(self):
         for btn in self.plane_btns:
             count = (CompleteLM.select().
