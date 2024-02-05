@@ -3,6 +3,7 @@ from modules import PlaneM, UnitM, PlaneTypeM
 
 
 class SetupPlane(QtWidgets.QDialog):
+    # noinspection PyUnresolvedReferences
     def __init__(self):
         super().__init__()
         self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
@@ -35,6 +36,7 @@ class SetupPlane(QtWidgets.QDialog):
         self.table.setColumnCount(4)
         self.table.setHorizontalHeaderLabels(('Тип', 'Бортовой номер', 'Подразделение', ''))
 
+    # noinspection PyUnresolvedReferences
     def fill_table(self):
         planes = PlaneM.select().where(PlaneM.deleted == False).join(PlaneTypeM)
         self.table.setRowCount(len(planes))
@@ -54,6 +56,7 @@ class SetupPlane(QtWidgets.QDialog):
         self.add_form = AddPlane()
         self.add_form.show()
 
+    # noinspection PyUnresolvedReferences
     def open_change_plane(self):
         sender = self.sender()
         self.change_form = EditPlane(sender.plane)
@@ -61,6 +64,7 @@ class SetupPlane(QtWidgets.QDialog):
 
 
 class AddPlane(QtWidgets.QWidget):
+    # noinspection PyUnresolvedReferences
     def __init__(self):
         super().__init__()
         self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
@@ -122,6 +126,7 @@ class AddPlane(QtWidgets.QWidget):
 
 
 class EditPlane(AddPlane):
+    # noinspection PyUnresolvedReferences
     def __init__(self, p):
         super().__init__()
         self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)

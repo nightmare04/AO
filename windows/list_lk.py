@@ -30,6 +30,7 @@ class Listlk(QtWidgets.QDialog):
             ""
         ])
 
+    # noinspection PyUnresolvedReferences
     def fill_table(self):
         self.table.setRowCount(len(self.lks))
         row = 0

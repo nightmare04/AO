@@ -1,9 +1,9 @@
-from PyQt6 import QtWidgets, QtCore
+from PyQt6 import QtWidgets
 from PyQt6.QtCore import QDate
 from PyQt6.QtGui import QColor
-from PyQt6.QtWidgets import QVBoxLayout, QPushButton, QTableWidgetItem, QTableWidget
+from PyQt6.QtWidgets import QVBoxLayout, QPushButton, QTableWidgetItem
 from ui import Ui_MainWindow
-from modules import Database, ClickQlabel, CheckM, ListControlM, CompleteLM, PlaneM
+from modules import ClickQlabel, CheckM, ListControlM, CompleteLM, PlaneM
 from datetime import datetime
 from windows import (Systems, EditLK, AddLk, SetupUnit, SetupSubunit, SetupType, SetupPlane,
                      Complete, Listlk, Checks, EditCheck, Condition)
@@ -19,7 +19,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.setupUi(self)
         self.new_form = None
         self.lks = []
-        self.setWindowTitle("Старший инженер по специальности")
+        self.setWindowTitle("Старший инженер по АО")
 
         self.checks_layout = QVBoxLayout()
         self.ui.checks_groupbox.setLayout(self.checks_layout)
@@ -46,12 +46,11 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def open_conditions(self):
         self.new_form = Condition()
-        self.new_form.exec()
-        self.fill_table()
+        self.new_form.show()
 
     def open_setup_system(self):
         self.new_form = Systems()
-        self.new_form.exec()
+        self.new_form.show()
 
     def open_setup_checks(self):
         self.new_form = Checks()
@@ -72,6 +71,7 @@ class MainWindow(QtWidgets.QMainWindow):
             label.clicked.connect(self.open_edit_check)
             self.checks_layout.addWidget(label)
 
+    # noinspection PyUnresolvedReferences
     def open_edit_check(self):
         sender = self.sender()
         ch = sender.check
@@ -144,6 +144,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.new_form.exec()
         self.fill_table()
 
+    # noinspection PyUnresolvedReferences
     def fill_table(self):
         """Заполняем таблицу долгами"""
         self.lks = ListControlM.select().where(ListControlM.complete_flag == False)
@@ -196,6 +197,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.new_form.exec()
         self.fill_table()
 
+    # noinspection PyUnresolvedReferences
     def open_edit_form(self):
         """Открытие формы редактирования листа контроля"""
         sender = self.sender()

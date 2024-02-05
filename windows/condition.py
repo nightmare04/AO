@@ -1,8 +1,8 @@
-from PyQt6 import QtWidgets, QtCore, QtGui
-from modules import UnitM, PlaneM, SystemM, AgregateM, SubunitM, DefectiveM, RemovedM
+from PyQt6 import QtWidgets
+from modules import UnitM, PlaneM, SystemM, AgregateM, SubunitM, DefectiveM, RemovedM, PlaneButton
 
 
-class Condition(QtWidgets.QDialog):
+class Condition(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle('Выберите самолет')
@@ -12,6 +12,7 @@ class Condition(QtWidgets.QDialog):
         self.all_btn_planes = []
         self.fill_planes()
 
+    # noinspection PyUnresolvedReferences
     def fill_planes(self):
         self.setLayout(QtWidgets.QVBoxLayout())
         self.unit_layout = QtWidgets.QHBoxLayout()
@@ -27,7 +28,7 @@ class Condition(QtWidgets.QDialog):
             row = 0
             col = 0
             for plane in planes:
-                plane_btn = QtWidgets.QPushButton(plane.tail_number)
+                plane_btn = PlaneButton(plane.tail_number)
                 plane_btn.clicked.connect(self.open_plane_cond)
                 plane_btn.plane = plane
                 plane_btn.setFixedWidth(30)
@@ -43,11 +44,11 @@ class Condition(QtWidgets.QDialog):
                     plane_layout.addWidget(plane_btn, row, col)
                     col += 1
 
+    # noinspection PyUnresolvedReferences
     def open_plane_cond(self):
         sender = self.sender()
         self.new_form = PlaneCondition(sender.plane)
-        self.new_form.exec()
-        self.update_planes()
+        self.new_form.show()
 
     @staticmethod
     def check_plane(btn):
@@ -64,9 +65,10 @@ class Condition(QtWidgets.QDialog):
             self.check_plane(plane_btn)
 
 
-class PlaneCondition(QtWidgets.QDialog):
-    def __init__(self, plane: PlaneM):
-        super().__init__()
+class PlaneCondition(QtWidgets.QWidget):
+    # noinspection PyUnresolvedReferences
+    def __init__(self, plane: PlaneM, parent=None):
+        super().__init__(parent)
         self.new_form = None
         self.plane = plane
         self.resize(700, 700)
@@ -109,6 +111,7 @@ class PlaneCondition(QtWidgets.QDialog):
 
         self.fill_table()
 
+    # noinspection PyUnresolvedReferences
     def fill_table(self):
         defects = DefectiveM.select().where(DefectiveM.id_plane == self.plane.id)
         removes = RemovedM.select().where(RemovedM.id_plane == self.plane.id)
@@ -152,11 +155,13 @@ class PlaneCondition(QtWidgets.QDialog):
             self.removed_table.setCellWidget(row, 4, btn_del)
             row += 1
 
+    # noinspection PyUnresolvedReferences
     def delete_defect(self):
         sender = self.sender()
         sender.defect.delete_instance()
         self.fill_table()
 
+    # noinspection PyUnresolvedReferences
     def delete_remove(self):
         sender = self.sender()
         sender.remove.delete_instance()
@@ -177,6 +182,7 @@ class PlaneCondition(QtWidgets.QDialog):
 
 
 class AddDefect(QtWidgets.QDialog):
+    # noinspection PyUnresolvedReferences
     def __init__(self, plane: PlaneM):
         super().__init__()
         self.setWindowTitle('Добавить неисправный блок')
@@ -227,6 +233,13 @@ class AddDefect(QtWidgets.QDialog):
         self.add_btn.clicked.connect(self.add_defect)
         self.grid_layout.addWidget(self.add_btn, 5, 0, 1, 2)
 
+    def check_defect(self, id_agr):
+        count_by_id = (len(RemovedM.select().where(RemovedM.id_agregate == id_agr)) +
+                       len(DefectiveM.select().where(DefectiveM.id_agregate == id_agr)))
+        if count_by_id == AgregateM.get(AgregateM.id == id_agr).amount:
+            print("ALARM!!!")
+
+
     def fill_systems(self, subunit_name):
         # self.system_name_combobox.clear()
         systems_list = list(SystemM.select().
@@ -245,12 +258,14 @@ class AddDefect(QtWidgets.QDialog):
         new_defect = DefectiveM()
         new_defect.id_plane = self.plane.id
         new_defect.id_agregate = AgregateM.get(AgregateM.name == self.agr_select.currentText()).id
+        self.check_defect(new_defect.id_agregate)
         new_defect.agr_number = self.agr_number_edit.text()
         new_defect.save()
         self.close()
 
 
 class AddRemoved(AddDefect):
+    # noinspection PyUnresolvedReferences
     def __init__(self, plane):
         super().__init__(plane)
         self.setWindowTitle('Добавить снятый блок')

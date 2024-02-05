@@ -1,9 +1,9 @@
 from PyQt6 import QtWidgets, QtCore
 from PyQt6.QtWidgets import QGridLayout, QGroupBox, QHBoxLayout, QPushButton
-from modules import DragGroupbox, DragButton
-from ui import Ui_Add_lk_form
-from datetime import datetime
+
+from modules import DragGroupbox, DragPlaneButton
 from modules.database import *
+from ui import Ui_Add_lk_form
 
 
 class AddLk(QtWidgets.QDialog):
@@ -29,6 +29,7 @@ class AddLk(QtWidgets.QDialog):
         self.setAcceptDrops(True)
         self.fill_selectors()
 
+    # noinspection PyUnresolvedReferences
     def fill_selectors(self):
         main_groupbox = QGroupBox("Выбрать:")
         group_layout = QHBoxLayout()
@@ -89,7 +90,7 @@ class AddLk(QtWidgets.QDialog):
         for btn in self.plane_type_btns:
             btn.setChecked(False)
 
-        btns = self.findChildren(DragButton)
+        btns = self.findChildren(DragPlaneButton)
         for unit_btn in self.unit_btns:
             for btn in btns:
                 if btn.plane.unit.id == unit_btn.unit.id and unit_btn.isChecked():
@@ -101,7 +102,7 @@ class AddLk(QtWidgets.QDialog):
         for btn in self.unit_btns:
             btn.setChecked(False)
 
-        btns = self.findChildren(DragButton)
+        btns = self.findChildren(DragPlaneButton)
         for plane_type_btn in self.plane_type_btns:
             for btn in btns:
                 if btn.plane.plane_type.id == plane_type_btn.plane_type.id and plane_type_btn.isChecked():
@@ -112,7 +113,7 @@ class AddLk(QtWidgets.QDialog):
     def fill_planes(self):
         for pl in PlaneM.select().where(PlaneM.deleted == False):
             pl: PlaneM
-            btn = DragButton(text=str(pl.tail_number))
+            btn = DragPlaneButton(text=str(pl.tail_number))
             btn.setFixedWidth(30)
             btn.setCheckable(True)
             btn.plane = pl
@@ -165,6 +166,7 @@ class AddLk(QtWidgets.QDialog):
             if btn.isChecked():
                 self.select_by_unit()
 
+    # noinspection PyUnresolvedReferences
     def check_toggle(self):
         """Проверка флага на подразделении"""
         sender = self.sender()
@@ -257,7 +259,7 @@ class EditLK(AddLk):
                        unit_id=plane_from_lk['unit'],
                        plane_type_id=plane_from_lk['plane_type'])
 
-            btn = DragButton(text=p.tail_number)
+            btn = DragPlaneButton(text=p.tail_number)
             btn.setFixedWidth(30)
             btn.setCheckable(True)
             btn.plane = p

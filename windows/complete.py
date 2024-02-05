@@ -29,6 +29,7 @@ class Complete(QtWidgets.QDialog):
         self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
         self.init_planes()
 
+    # noinspection PyUnresolvedReferences
     def init_planes(self):
         planes_for_exec = self.lk.planes_for_exec
         for plane in planes_for_exec:
@@ -105,6 +106,7 @@ class Complete(QtWidgets.QDialog):
         self.lk.save()
         self.close()
 
+    # noinspection PyUnresolvedReferences
     def open_plane_complete(self):
         sender = self.sender()
         self.plane_complete = EditComplete(sender.plane, self.lk)
@@ -126,6 +128,7 @@ class EditComplete(QtWidgets.QDialog):
         self.completed = self.compl_from_model()
         self.init_subunits()
 
+    # noinspection PyUnresolvedReferences
     def init_subunits(self):
         for su in self.subunits:
             btn = QtWidgets.QPushButton(su.name)
@@ -144,6 +147,7 @@ class EditComplete(QtWidgets.QDialog):
             result.append(str(model.id_subunit))
         return result
 
+    # noinspection PyUnresolvedReferences
     def handle_spec(self):
         sender = self.sender()
         if sender.isChecked():

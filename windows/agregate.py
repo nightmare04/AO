@@ -1,8 +1,9 @@
 from PyQt6 import QtWidgets, QtCore
-from modules import AgregateM, SystemM, PlaneTypeM
+from modules import AgregateM, SystemM, AgregateButton
 
 
 class Agregate(QtWidgets.QWidget):
+    # noinspection PyUnresolvedReferences
     def __init__(self, system: SystemM):
         super().__init__()
         self.system = system
@@ -33,6 +34,7 @@ class Agregate(QtWidgets.QWidget):
         self.new_form = AddAgregate(self.system)
         self.new_form.show()
 
+    # noinspection PyUnresolvedReferences
     def fill_table(self):
         agregates = AgregateM.select().where(AgregateM.id_system == self.system.id)
         self.table.setRowCount(len(agregates))
@@ -41,11 +43,11 @@ class Agregate(QtWidgets.QWidget):
             agregate_name = QtWidgets.QTableWidgetItem(agregate.name)
             agregate_amount = QtWidgets.QTableWidgetItem(str(agregate.amount))
 
-            btn_chg = QtWidgets.QPushButton('Изменить')
+            btn_chg = AgregateButton('Изменить')
             btn_chg.clicked.connect(self.change_agr)
             btn_chg.agr = agregate
 
-            btn_del = QtWidgets.QPushButton('Удалить')
+            btn_del = AgregateButton('Удалить')
             btn_del.clicked.connect(self.del_agr)
             btn_del.agr = agregate
 
@@ -55,11 +57,13 @@ class Agregate(QtWidgets.QWidget):
             self.table.setCellWidget(row, 3, btn_del)
             row += 1
 
+    # noinspection PyUnresolvedReferences
     def del_agr(self):
         sender = self.sender()
         sender.agr.delete_instance()
         self.fill_table()
 
+    # noinspection PyUnresolvedReferences
     def change_agr(self):
         sender = self.sender()
         self.new_form = ChangeAgr(self.system, sender.agr)
@@ -67,6 +71,7 @@ class Agregate(QtWidgets.QWidget):
 
 
 class AddAgregate(QtWidgets.QWidget):
+    # noinspection PyUnresolvedReferences
     def __init__(self, system):
         super().__init__()
         self.system = system
@@ -99,6 +104,7 @@ class AddAgregate(QtWidgets.QWidget):
 
 
 class ChangeAgr(AddAgregate):
+    # noinspection PyUnresolvedReferences
     def __init__(self, system, agr):
         super().__init__(system)
         self.system = system
@@ -109,7 +115,6 @@ class ChangeAgr(AddAgregate):
 
         self.add_btn.clicked.disconnect()
         self.add_btn.clicked.connect(self.save_agr)
-
 
     def save_agr(self):
         self.agr.name = self.name_edit.text()

@@ -1,9 +1,11 @@
 from PyQt6 import QtWidgets, QtCore
-from PyQt6.QtWidgets import QPushButton, QTableWidget, QTableWidgetItem, QGridLayout, QLabel, QLineEdit, QCheckBox
+from PyQt6.QtWidgets import QPushButton, QTableWidgetItem, QGridLayout, QLabel, QLineEdit, QCheckBox
+
 from modules import UnitM
 
 
 class SetupUnit(QtWidgets.QDialog):
+    # noinspection PyUnresolvedReferences
     def __init__(self):
         super().__init__()
         self.resize(280, 400)
@@ -36,6 +38,7 @@ class SetupUnit(QtWidgets.QDialog):
         self.table.setHorizontalHeaderLabels(('id', 'Название', ''))
         self.table.hideColumn(0)
 
+    # noinspection PyUnresolvedReferences
     def fill_table(self):
         podrs = UnitM.select()
         self.table.setRowCount(len(podrs))
@@ -53,6 +56,7 @@ class SetupUnit(QtWidgets.QDialog):
         self.add_form = AddPodr()
         self.add_form.show()
 
+    # noinspection PyUnresolvedReferences
     def open_change_podr(self):
         sender = self.sender()
         self.change_form = EditPodr(sender.podr)
@@ -60,6 +64,7 @@ class SetupUnit(QtWidgets.QDialog):
 
 
 class AddPodr(QtWidgets.QWidget):
+    # noinspection PyUnresolvedReferences
     def __init__(self):
         super().__init__()
         self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
@@ -93,6 +98,7 @@ class AddPodr(QtWidgets.QWidget):
 
 
 class EditPodr(AddPodr):
+    # noinspection PyUnresolvedReferences
     def __init__(self, p):
         super().__init__()
         self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)

@@ -3,6 +3,7 @@ from modules import SubunitM, PlaneTypeM
 
 
 class SetupSubunit(QtWidgets.QDialog):
+    # noinspection PyUnresolvedReferences
     def __init__(self):
         super().__init__()
         self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
@@ -33,6 +34,7 @@ class SetupSubunit(QtWidgets.QDialog):
         self.table.setColumnCount(3)
         self.table.setHorizontalHeaderLabels(('Наименование', 'Тип АТ', ''))
 
+    # noinspection PyUnresolvedReferences
     def fill_table(self):
         subunits = SubunitM.select()
         self.table.setRowCount(len(subunits))
@@ -53,6 +55,7 @@ class SetupSubunit(QtWidgets.QDialog):
         self.add_form = AddSubunit()
         self.add_form.show()
 
+    # noinspection PyUnresolvedReferences
     def open_change_subunit(self):
         sender = self.sender()
         self.change_form = EditSubunit(sender.subunit)
@@ -60,6 +63,7 @@ class SetupSubunit(QtWidgets.QDialog):
 
 
 class AddSubunit(QtWidgets.QWidget):
+    # noinspection PyUnresolvedReferences
     def __init__(self):
         super().__init__()
         self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
@@ -94,6 +98,7 @@ class AddSubunit(QtWidgets.QWidget):
 
 
 class EditSubunit(AddSubunit):
+    # noinspection PyUnresolvedReferences
     def __init__(self, s):
         super().__init__()
         self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)

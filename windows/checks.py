@@ -1,5 +1,3 @@
-import datetime
-
 from PyQt6 import QtWidgets, QtCore
 from PyQt6.QtWidgets import (QPushButton, QTableWidget, QTableWidgetItem, QLineEdit, QDateEdit, QComboBox, QVBoxLayout,
                              QGridLayout, QLabel, QHBoxLayout)
@@ -7,7 +5,9 @@ from PyQt6.QtWidgets import (QPushButton, QTableWidget, QTableWidgetItem, QLineE
 from modules import CheckM
 
 
+# noinspection PyUnresolvedReferences
 class Checks(QtWidgets.QDialog):
+    # noinspection PyUnresolvedReferences
     def __init__(self, parent=None):
         super().__init__(parent)
         self.resize(500, 300)
@@ -46,6 +46,7 @@ class Checks(QtWidgets.QDialog):
         self.new_window = AddCheck()
         self.new_window.show()
 
+    # noinspection PyUnresolvedReferences
     def fill_table(self):
         self.all_checks = CheckM.select()
         self.table.setRowCount(len(self.all_checks))
@@ -70,6 +71,7 @@ class Checks(QtWidgets.QDialog):
 
 
 class AddCheck(QtWidgets.QDialog):
+    # noinspection PyUnresolvedReferences
     def __init__(self):
         super().__init__()
         self.resize(300, 300)
@@ -117,6 +119,7 @@ class AddCheck(QtWidgets.QDialog):
 
 
 class EditCheck(AddCheck):
+    # noinspection PyUnresolvedReferences
     def __init__(self, ch: CheckM):
         super().__init__()
         self.check = ch

@@ -1,5 +1,3 @@
-import json
-from PyQt6.QtWidgets import QMessageBox
 from peewee import *
 from playhouse.sqlite_ext import SqliteExtDatabase, JSONField
 

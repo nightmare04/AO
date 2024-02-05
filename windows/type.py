@@ -3,6 +3,7 @@ from modules import PlaneTypeM
 
 
 class SetupType(QtWidgets.QDialog):
+    # noinspection PyUnresolvedReferences
     def __init__(self):
         super().__init__()
         self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
@@ -34,6 +35,7 @@ class SetupType(QtWidgets.QDialog):
         self.table.setHorizontalHeaderLabels(('id', 'Название', ''))
         self.table.hideColumn(0)
 
+    # noinspection PyUnresolvedReferences
     def fill_table(self):
         types = PlaneTypeM.select()
         self.table.setRowCount(len(types))
@@ -51,6 +53,7 @@ class SetupType(QtWidgets.QDialog):
         self.add_form = AddType()
         self.add_form.show()
 
+    # noinspection PyUnresolvedReferences
     def open_change_type(self):
         sender = self.sender()
         self.change_form = EditType(sender.type)
@@ -58,6 +61,7 @@ class SetupType(QtWidgets.QDialog):
 
 
 class AddType(QtWidgets.QWidget):
+    # noinspection PyUnresolvedReferences
     def __init__(self):
         super().__init__()
         self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
@@ -81,6 +85,7 @@ class AddType(QtWidgets.QWidget):
 
 
 class EditType(AddType):
+    # noinspection PyUnresolvedReferences
     def __init__(self, t):
         super().__init__()
         self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
